@@ -160,7 +160,7 @@ int write_timeout(int fd, unsigned int wait_seconds) {
     return ret;
 }
 
-int accept_timtout(int fd, struct sockaddr_in *addr, unsigned int wait_seconds) {
+int accept_timeout(int fd, struct sockaddr_in *addr, unsigned int wait_seconds) {
     int ret;
     socklen_t addrlen = sizeof(*addr);
 
