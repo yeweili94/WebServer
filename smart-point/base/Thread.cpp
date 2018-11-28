@@ -14,7 +14,7 @@ pid_t gettid()
 
 namespace CurrentThread
 {
-__thread const char* t_threadName = "unknown";
+    __thread const char* t_threadName = "unknown";
     pid_t tid()
     {
         if (t_cachedTid == 0) {
