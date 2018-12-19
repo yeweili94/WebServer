@@ -1,4 +1,4 @@
-//面向对象的thread类的封装，演示面向对象c++中回调函数的用法，muduo中使用的是居于对象的封装。
+//面向对象的thread类的封装，演示面向对象c++中回调函数的用法，muduo中使用的是基于对象的封装。
 //把纯虚函数Run()封装为private是必须的，不能暴露Run方法给用户使用，不然这个run方法是在主线程中进行的。
 //线程对象的生命周期和线程的生命周期是不同的
 //如何让线程执行完毕，线程自动销毁？ : 需要使用动态创建对象 ThreadTests* t = new ThreadTest();
@@ -12,7 +12,7 @@ public:
     virtual ~Thread() {}
     void Start();
     void Join();
-    //函数执行入口设为static,不能将Run方法直接传递给pthread_create(),因为Run方法中还有一个参数是this
+    //函数执行入口设为static,不能将Run方法直接传递给pthread_create(),因为Run方法作为成员方法有一个参数是this
     //设置ThreadRoutine静态方法作为适配
     static void* ThreadRoutine(void *arg);
 
