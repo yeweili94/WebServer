@@ -3,6 +3,7 @@ set(base_SRC
     Condition.cpp
     Thread.cpp
     CountDownLatch.cpp
+    Timestamp.cpp
     )
 add_library(libserver_base ${base_SRC})
 target_link_libraries(libserver_base pthread rt)
