@@ -7,6 +7,7 @@
 
 namespace ywl
 {
+
 template<typename T>
 class Singleton : public boost::noncopyable
 {
@@ -39,7 +40,6 @@ T* Singleton<T>::value_ = NULL;
 
 template<typename T>
 pthread_once_t Singleton<T>::ponce_ = PTHREAD_ONCE_INIT;
-
 
 }//ywl
 #endif
