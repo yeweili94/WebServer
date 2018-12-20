@@ -113,7 +113,8 @@ int main() {
                 }
 
                 std::cout << buf;
-                write(connfd, buf, strlen(buf));
+                int n = write(connfd, buf, strlen(buf));
+                (void) n;
             }
         }
     }
