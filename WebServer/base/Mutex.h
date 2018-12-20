@@ -1,12 +1,16 @@
-#ifndef MUDUO_STUDY_MUTEX_H
-#define MUDUO_STUDY_MUTEX_H
+#ifndef WEB_SERVER_MUTEX_H
+#define WEB_SERVER_MUTEX_H
 #include "Thread.h"
+#include "CurrentThread.h"
 
 #include <assert.h>
 #include <boost/noncopyable.hpp>
 #include <pthread.h>
 
-class MutexLock : boost::noncopyable {
+namespace ywl
+{
+class MutexLock : boost::noncopyable 
+{
 public:
     MutexLock() : holder_(0)
     {
@@ -66,7 +70,7 @@ public:
 private:
     MutexLock& mutex_;
 };
-
+}//ywl
 #define MutexLockGuard(x) error "Missing guard object name"
 
 #endif

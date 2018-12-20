@@ -1,47 +1,125 @@
 #include "Thread.h"
+#include "CurrentThread.h"
 
 #include <pthread.h>
 #include <stdio.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/syscall.h>
 #include <linux/unistd.h>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits/is_same.hpp>
 
-__thread pid_t t_cachedTid = 0;
-pid_t gettid()
+
+namespace ywl
 {
-    return static_cast<pid_t>(::syscall(SYS_gettid));
-}
-
 namespace CurrentThread
 {
+    __thread int t_cachedTid = 0;
+    __thread char t_tidString[32];
     __thread const char* t_threadName = "unknown";
-    pid_t tid()
-    {
-        if (t_cachedTid == 0) {
-            t_cachedTid = gettid();
-        }
-        return t_cachedTid;
-    }
-
-    const char* name()
-    {
-        return t_threadName;
-    }
-
-    bool isMainThread()
-    {
-        return tid() == ::getpid();
-    }
+    const bool sameType = boost::is_same<int, pid_t>::value;
+    BOOST_STATIC_ASSERT(sameType);
+    
 }//namespace CurrentThread
 
-class ThreadNameInitializer
+namespace detail
 {
-public:
-    ThreadNameInitializer()
+    pid_t gettid()
     {
-        CurrentThread::t_threadName = "main";
+        return static_cast<pid_t>(::syscall(SYS_gettid));
     }
-};
 
-ThreadNameInitializer init;
+    void afterFork()
+    {
+        CurrentThread::t_cachedTid = 0;
+        CurrentThread::t_threadName = "main";
+        CurrentThread::tid();
+    }
+
+    class ThreadNameInitializer
+    {
+    public:
+        ThreadNameInitializer()
+        {
+            CurrentThread::t_threadName = "main";
+            CurrentThread::tid();
+            pthread_atfork(NULL, NULL, &afterFork);
+        }
+    };
+
+    //初始化主线程
+    ThreadNameInitializer init;
+}//namespace detail
+}//namespace ywl
+
+
+using namespace ywl;
+
+void CurrentThread::cacheTid()
+{
+    if (t_cachedTid == 0) 
+    {
+        t_cachedTid = detail::gettid();
+        int n = snprintf(t_tidString, sizeof t_tidString, "%5d ", t_cachedTid);
+        assert(n == 6);
+        (void) n;
+    }
+}
+
+bool CurrentThread::isMainThread()
+{
+    return tid() == ::getpid();
+}
+
+AtomicInt32 Thread::numCreated_;
+
+Thread::Thread(const ThreadFunc& func, const std::string& name)
+    : started_(false),
+      pthreadId_(0),
+      tid_(0),
+      func_(func),
+      name_(name)
+{
+    numCreated_.increment();
+}
+
+Thread::~Thread()
+{
+
+}
+
+void Thread::start()
+{
+    assert(!started_);
+    started_ = true;
+    errno = pthread_create(&pthreadId_, NULL, &startThread, this);
+    if (errno != 0)
+    {
+        //FIXME
+        printf("Failed in pthread_create\n");
+    }
+}
+
+int Thread::join()
+{
+    assert(started_);
+    return pthread_join(pthreadId_, NULL);
+}
+
+void* Thread::startThread(void* obj)
+{
+    Thread* thread = static_cast<Thread*>(obj);
+    thread->runInThread();
+    return NULL;
+}
+
+void Thread::runInThread()
+{
+    tid_ = CurrentThread::tid();
+    CurrentThread::t_threadName = name_.c_str();
+    //FIXME
+    func_();
+    CurrentThread::t_threadName = "finished";
+}
 

@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <stdio.h>
 using std::string;
+using namespace ywl;
 
 class Stock : boost::noncopyable
 {

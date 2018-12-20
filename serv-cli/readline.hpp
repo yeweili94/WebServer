@@ -134,7 +134,7 @@ int read_timeout(int fd, unsigned int wait_seconds) {
 }
 
 int write_timeout(int fd, unsigned int wait_seconds) {
-    int ret;
+    int ret = -1;
     if (wait_seconds > 0) {
         fd_set write_fdset;
         struct timeval timeout;
@@ -161,7 +161,7 @@ int write_timeout(int fd, unsigned int wait_seconds) {
 }
 
 int accept_timeout(int fd, struct sockaddr_in *addr, unsigned int wait_seconds) {
-    int ret;
+    int ret = -1;
     socklen_t addrlen = sizeof(*addr);
 
     if (wait_seconds > 0) {

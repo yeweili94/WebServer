@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include <stdlib.h> //::atexit
 
+namespace ywl
+{
 template<typename T>
 class Singleton : public boost::noncopyable
 {
@@ -39,4 +41,5 @@ template<typename T>
 pthread_once_t Singleton<T>::ponce_ = PTHREAD_ONCE_INIT;
 
 
+}//ywl
 #endif
