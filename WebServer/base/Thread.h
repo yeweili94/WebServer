@@ -1,7 +1,7 @@
-#ifndef MUDUO_STUDY_THREAD_H
-#define MUDUO_STUDY_THREAD_H
+#ifndef WEB_SERVER_THREAD_H
+#define WEB_SERVER_THREAD_H
 
-#include "atomic.h"
+#include "Atomic.h"
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 #include <pthread.h>
@@ -19,9 +19,9 @@ public:
 
     void start();
     int join();
+
     bool started() const { return started_; }
     pid_t tid() const { return tid_; }
-
     static int numCreated() { return numCreated_.get(); }
 private:
     static void* startThread(void* arg);

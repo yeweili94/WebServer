@@ -4,6 +4,7 @@ set(base_SRC
     Thread.cpp
     CountDownLatch.cpp
     Timestamp.cpp
+    ThreadPool.cpp
     )
 add_library(libserver_base ${base_SRC})
 target_link_libraries(libserver_base pthread rt)

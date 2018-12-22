@@ -1,5 +1,5 @@
-#ifndef MUDUO_STUDY_SINGLETON
-#define MUDUO_STUDY_SINGLETON
+#ifndef WEB_SERVER_SINGLETON
+#define WEB_SERVER_SINGLETON
 
 #include <boost/noncopyable.hpp>
 #include <pthread.h>

@@ -97,7 +97,8 @@ void Thread::start()
     if (errno != 0)
     {
         //FIXME
-        printf("Failed in pthread_create\n");
+        perror("Fatal : Failed in pthread_create\n");
+        exit(-1);
     }
 }
 

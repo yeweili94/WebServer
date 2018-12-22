@@ -56,7 +56,7 @@ int main()
   t3.start();
   t3.join();
 
-  ywl::Thread t4(boost::bind(&Foo::memberFunc2, boost::ref(foo), std::string("Shuo Chen")));
+  ywl::Thread t4(boost::bind(&Foo::memberFunc2, boost::ref(foo), std::string("ye weili")));
   t4.start();
   t4.join();
 
