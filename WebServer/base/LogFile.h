@@ -5,7 +5,7 @@
 #include "Mutex.h"
 
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <string>
 #include <memory>
@@ -31,7 +31,7 @@ private:
 
     int count_;
     MutexLock mutex_;
-    boost::shared_ptr<AppendFile> file_;
+    boost::scoped_ptr<AppendFile> file_;
 };
 
 }

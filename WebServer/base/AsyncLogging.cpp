@@ -21,7 +21,7 @@ ywl::AsyncLogging::AsyncLogging(const std::string logFileName, int flushInterval
       nextBuffer_(new Buffer),
       buffers_()
 {
-    assert(basename_.size() > 1 && basename_[0] == '/');
+    assert(basename_.size() > 1);
     currentBuffer_->bzero();
     nextBuffer_->bzero();
     buffers_.reserve(16);

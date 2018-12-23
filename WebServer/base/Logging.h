@@ -2,6 +2,7 @@
 #define WEB_SERVER_LOGGING_H
 
 #include "LogStream.h"
+#include "Timestamp.h"
 
 #include <pthread.h>
 #include <string.h>
@@ -39,6 +40,7 @@ private:
         LogStream stream_;
         int line_;
         std::string basename_;
+        Timestamp time_;
     private:
     };
 

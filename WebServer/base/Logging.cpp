@@ -8,12 +8,14 @@
 #include <time.h>
 #include <sys/time.h>
 
+
 static pthread_once_t ponce_ = PTHREAD_ONCE_INIT;
+//singleton
 static ywl::AsyncLogging *AsyncLogger_;
 
+//初始化log文件名
 std::string ywl::Logger::logFileName_ = "../log/ywl_WebServer.log";
 
-//singleton 
 void once_init()
 {
     AsyncLogger_ = new ywl::AsyncLogging(ywl::Logger::getLogFileName());
@@ -27,28 +29,35 @@ void output(const char* msg, int len)
     AsyncLogger_->append(msg, len);
 }
 
-using namespace ywl;
+namespace ywl
+{
+__thread char t_time[32];
 
 Logger::Impl::Impl(const char* filename, int line)
     : stream_(),
       line_(line),
-      basename_(filename)
+      basename_(filename),
+      time_(Timestamp::now())
 {
     formatTime();
 }
 
 void Logger::Impl::formatTime()
 {
-    struct timeval tv;
-    time_t time;
-    char str_t[26] = {0};
-    gettimeofday(&tv, NULL);
-    time = tv.tv_sec;
-    struct tm* p_time = localtime(&time);
-    strftime(str_t, 26, "%Y-%m-%d %H:%M:%S\n", p_time);
-    stream_ << str_t;
+    int64_t microSecondsSinceEpoch = time_.microSecondsSinceEpoch();
+    time_t seconds = static_cast<time_t>(microSecondsSinceEpoch / (1000*1000));
+
+    struct tm tm_time;
+    ::gmtime_r(&seconds, &tm_time);
+
+    int len = snprintf(t_time, sizeof(t_time), "%4d-%02d-%02d %02d:%02d:%02d\n",
+                       tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
+                       tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
+    assert(len == 20); (void)len;
+    stream_ << t_time;
 }
 
+//初始化LOG所在文件和行数,便于查找bug
 Logger::Logger(const char* fileName, int line)
     : impl_(fileName, line)
 {
@@ -60,4 +69,6 @@ Logger::~Logger()
     impl_.stream_ << " -- " << impl_.basename_ << ':' << impl_.line_ << '\n';
     const LogStream::Buffer& buf(stream().buffer());
     output(buf.data(), buf.length());
+}
+
 }
