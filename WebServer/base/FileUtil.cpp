@@ -13,6 +13,11 @@ using namespace ywl;
 AppendFile::AppendFile(const string& filename)
     : fp_(fopen(filename.c_str(), "ae"))
 {
+    fp_ = fopen(filename.c_str(), "ae");
+    if (fp_ == NULL) {
+        fprintf(stderr, "open %s failed!\n", filename.c_str());
+        exit(1);
+    }
     setbuffer(fp_, buffer_, sizeof buffer_);
 }
 
