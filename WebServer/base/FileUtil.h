@@ -5,19 +5,23 @@
 
 #include <string>
 
+namespace ywl
+{
+
 class AppendFile : public boost::noncopyable
 {
 public:
     explicit AppendFile(const std::string& filename);
     ~AppendFile();
 
-    int append(const char* log, const size_t len);
+    void append(const char* log, const size_t len);
     void flush();
+
 private:
-    int write(const char* log, size_t len);
+    size_t write(const char* log, size_t len);
     FILE* fp_;
     char buffer_[64*1024];
 };
 
-
+}
 #endif

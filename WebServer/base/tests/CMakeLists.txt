@@ -5,4 +5,6 @@ target_link_libraries(thread_test libserver_base)
 add_executable(threadpool_test threadpool_test.cpp)
 target_link_libraries(threadpool_test libserver_base)
 
+add_executable(logging_test Logging_test.cpp)
+target_link_libraries(logging_test libserver_base)
 
