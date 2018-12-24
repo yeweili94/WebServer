@@ -107,6 +107,7 @@ void ywl::AsyncLogging::threadFunc()
             bufferToWrite.resize(2);
         }
 
+        //newBuffer1 和 newBuffer2只会在后端写入线程被调用,不必要加锁
         if (!newBuffer1)
         {
             assert(!bufferToWrite.empty());
@@ -122,7 +123,7 @@ void ywl::AsyncLogging::threadFunc()
             bufferToWrite.pop_back();
             newBuffer2->reset();
         }
-        
+
         bufferToWrite.clear();
         output.flush();
     }

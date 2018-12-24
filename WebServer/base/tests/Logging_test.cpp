@@ -48,7 +48,7 @@ void stressing_single_thread()
     }
 }
 
-void stressing_multi_threads(int threadNum = 4)
+void stressing_multi_threads(int threadNum = 40)
 {
     // threadNum * 100000 lines
     cout << "----------stressing test multi thread-----------" << endl;

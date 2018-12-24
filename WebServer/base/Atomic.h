@@ -66,8 +66,9 @@ private:
 };
 }//namespace detail
 
-using AtomicInt32 = detail::AtomicIntegerT<int32_t>;
-using AtomicInt64 = detail::AtomicIntegerT<int64_t>;
+using namespace detail;
+typedef AtomicIntegerT<int32_t> AtomicInt32;
+typedef AtomicIntegerT<int64_t> AtomicInt64;
 }//namespace ywl
 
 #endif
