@@ -52,10 +52,10 @@ void stressing_multi_threads(int threadNum = 4)
 {
     // threadNum * 100000 lines
     cout << "----------stressing test multi thread-----------" << endl;
-    vector<boost::shared_ptr<ywl::Thread> > vsp;
+    vector<boost::shared_ptr<Thread> > vsp;
     for (int i = 0; i < threadNum; ++i)
     {
-        boost::shared_ptr<ywl::Thread> tmp(new ywl::Thread(threadFunc, "testFunc"));
+        boost::shared_ptr<Thread> tmp(new Thread(threadFunc, "testFunc"));
         vsp.push_back(tmp);
     }
     for (int i = 0; i < threadNum; ++i)
@@ -76,12 +76,8 @@ int main()
 {
     // 共500014行
     type_test();
-    sleep(3);
     stressing_single_thread();
-    sleep(3);
     other();
-    sleep(3);
     stressing_multi_threads();
-    sleep(3);
     return 0;
 }
