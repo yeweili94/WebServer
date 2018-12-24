@@ -24,10 +24,6 @@ public:
     {
     }
 
-    ~Timestamp()
-    {
-    }
-
     explicit Timestamp(int64_t microSecondsSinceEpoch);
 
     void swap(Timestamp& that)
@@ -53,6 +49,28 @@ public:
 private:
     int64_t microSecondsSinceEpoch_;
 };
+
+inline bool operator<(Timestamp lhs, Timestamp rhs)
+{
+    return lhs.microSecondsSinceEpoch() < rhs.microSecondsSinceEpoch();
+}
+
+inline bool operator==(Timestamp lhs, Timestamp rhs)
+{
+    return lhs.microSecondsSinceEpoch() == rhs.microSecondsSinceEpoch();
+}
+
+inline double timeDifference(Timestamp high, Timestamp low)
+{
+    int64_t diff = high.microSecondsSinceEpoch() - low.microSecondsSinceEpoch();
+    return static_cast<double>(diff) / Timestamp::KMicroSecondsPerSecond;
+}
+
+inline Timestamp addTime(Timestamp timestamp, double seconds)
+{
+    int64_t delta = static_cast<int64_t>(seconds * Timestamp::KMicroSecondsPerSecond);
+    return Timestamp(timestamp.microSecondsSinceEpoch() + delta);
+}
 
 }//namespace ywl
 
