@@ -1,0 +1,8 @@
+基于reactor模式，epoll水平触发的http服务
+valgrind检测内存泄漏
+依赖boost库(不打算改用c++11)
+使用方式：
+mkdir build;
+cd build; cmake ../ && make
+
+enjoying...
