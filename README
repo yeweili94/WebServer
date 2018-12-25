@@ -1,8 +1,11 @@
 基于reactor模式，epoll水平触发的http服务
 valgrind检测内存泄漏
 依赖boost库(不打算改用c++11)
+待改进:线程池线程动态减少，任务队列可以采用无锁队列,避免加锁开销
+
 使用方式：
 mkdir build;
 cd build; cmake ../ && make
+cd WebServer;
 
 enjoying...
