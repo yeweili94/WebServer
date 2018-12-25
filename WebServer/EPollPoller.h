@@ -4,7 +4,7 @@
 #include "Poller.h"
 
 #include <vector>
-#include <unordered_map>
+#include <map>
 
 struct epoll_event;
 
@@ -35,7 +35,7 @@ private:
     void update(Operation ope, Channel* channel);
 
     using EventList = std::vector<struct epoll_event>;
-    using ChannelMap = std::unordered_map<int, Channel*>;
+    using ChannelMap = std::map<int, Channel*>;
 
     int epollfd_;
     EventList events_;

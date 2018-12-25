@@ -7,7 +7,6 @@
 #include <boost/noncopyable.hpp>
 
 #include <vector>
-#include <map>
 
 namespace ywl
 {

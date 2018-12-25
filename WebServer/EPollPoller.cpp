@@ -127,6 +127,27 @@ void EPollPoller::updateChannel(Channel* channel)
     }
 }
 
+void EPollPoller::removeChannel(Channel* channel)
+{
+    Poller::assertInLoopThread();
+    int fd = channel->fd();
+    LOG << " fd = " << fd;
+    assert(channels_.find(fd) != channels_.end());
+    assert(channels_[fd] == channel);
+    assert(channel->isNoneEvent());
+
+    int index = channel->index();
+    assert(index == kAdded || index == kDeleted);
+    size_t n = channels_.erase(fd);
+    (void)n;
+    assert(n == 1);
+    if (index == kAdded)
+    {
+        update(DEL, channel);
+    }
+    channel->set_index(kNew);
+}
+
 void EPollPoller::update(Operation ope, Channel* channel)
 {
     struct epoll_event event;
