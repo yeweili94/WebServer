@@ -1,8 +1,8 @@
 #ifndef WEB_SERVER_NET_TIMER_H
 #define WEB_SERVER_NET_TIMER_H
 
-#include "./base/Atomic.h"
-#include "./base/Timestamp.h"
+#include "base/Atomic.h"
+#include "base/Timestamp.h"
 
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
@@ -45,11 +45,6 @@ private:
     const int64_t sequence_;
 
     static AtomicInt64 s_numCreated_;
-};
-
-class TimerId
-{
-
 };
 
 }
