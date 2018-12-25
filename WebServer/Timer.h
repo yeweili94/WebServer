@@ -22,7 +22,7 @@ public:
           interval_(interval),
           repeat_(interval > 0),
           sequence_(s_numCreated_.incrementAndGet())
-    {  }
+    {}
 
     void run() const
     {
