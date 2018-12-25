@@ -16,7 +16,7 @@ class AsyncLogging;
 class Logger
 {
 public:
-    Logger(const char* fileName, int line);
+    Logger(const char* fileName, int line, int level = 0);
     ~Logger();
     LogStream& stream() { return impl_.stream_; }
 
@@ -46,9 +46,11 @@ private:
 
     Impl impl_;
     static std::string logFileName_;
+    int level_;
 };
 
 }
-#define LOG ywl::Logger(__FILE__, __LINE__).stream()
+#define LOG ywl::Logger(__FILE__, __LINE__, 0).stream()
+#define FATAL ywl::Logger(__FILE__, __LINE__, 1).stream()
 
 #endif

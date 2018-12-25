@@ -22,7 +22,6 @@ void once_init()
     AsyncLogger_->start();
 }
 
-
 void output(const char* msg, int len)
 {
     pthread_once(&ponce_, once_init);
@@ -52,14 +51,15 @@ void Logger::Impl::formatTime()
 
     int len = snprintf(t_time, sizeof(t_time), "%4d-%02d-%02d %02d:%02d:%02d\n",
                        tm_time.tm_year + 1900, tm_time.tm_mon + 1, tm_time.tm_mday,
-                       tm_time.tm_hour, tm_time.tm_min, tm_time.tm_sec);
+                       tm_time.tm_hour+8, tm_time.tm_min, tm_time.tm_sec);
     assert(len == 20); (void)len;
     stream_ << t_time;
 }
 
 //初始化LOG所在文件和行数,便于查找bug
-Logger::Logger(const char* fileName, int line)
-    : impl_(fileName, line)
+Logger::Logger(const char* fileName, int line, int level)
+    : impl_(fileName, line),
+      level_(level)
 {
 
 }
@@ -69,6 +69,11 @@ Logger::~Logger()
     impl_.stream_ << " -- " << impl_.basename_ << ':' << impl_.line_ << '\n';
     const LogStream::Buffer& buf(stream().buffer());
     output(buf.data(), buf.length());
+    if (level_ == 1)
+    {
+        sleep(3);
+        abort();
+    }
 }
 
 }

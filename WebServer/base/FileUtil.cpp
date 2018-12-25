@@ -26,7 +26,7 @@ AppendFile::~AppendFile()
     fclose(fp_);
 }
 
-void  AppendFile::append(const char* logline, const size_t len)
+void AppendFile::append(const char* logline, const size_t len)
 {
     int nleft = len;
     size_t nwritten;

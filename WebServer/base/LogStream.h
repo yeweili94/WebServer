@@ -116,8 +116,6 @@ public:
     void resetBuffer() { buffer_.reset(); }
 
 private:
-    /* void staticCheck(); */
-
     template<typename T>
     void formatInteger(T);
 
