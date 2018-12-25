@@ -1,5 +1,7 @@
 #include "LogStream.h"
 
+#include <boost/static_assert.hpp>
+
 #include <limits>
 #include <assert.h>
 #include <string.h>
@@ -9,6 +11,10 @@
 
 const char digits[] = "9876543210123456789";
 const char* zero = digits + 9;
+BOOST_STATIC_ASSERT(sizeof(digits) == 20);
+
+const char digitsHex[] = "0123456789ABCDEF";
+BOOST_STATIC_ASSERT(sizeof(digitsHex) == 17);
 
 template<typename T>
 size_t convert(char buf[], T value)
@@ -27,6 +33,24 @@ size_t convert(char buf[], T value)
     {
         *p++ = '-';
     }
+    *p = '\0';
+    std::reverse(buf, p);
+
+    return p - buf;
+}
+
+size_t convertHex(char buf[], uintptr_t value)
+{
+    uintptr_t i = value;
+    char* p = buf;
+
+    do
+    {
+        int lsd = i % 16;
+        i /= 16;
+        *p++ = digitsHex[lsd];
+    } while(i != 0);
+
     *p = '\0';
     std::reverse(buf, p);
 
@@ -94,6 +118,20 @@ LogStream& LogStream::operator<<(long long v)
 LogStream& LogStream::operator<<(unsigned long long v)
 {
     formatInteger(v);
+    return *this;
+}
+
+LogStream& LogStream::operator<<(const void* p)
+{
+    uintptr_t v = reinterpret_cast<uintptr_t>(p);
+    if (buffer_.avail() >= KMaxNumericSize)
+    {
+        char* buf = buffer_.current();
+        buf[0] = '0';
+        buf[1] = 'x';
+        size_t len = convertHex(buf+2, v);
+        buffer_.add(len+2);
+    }
     return *this;
 }
 
