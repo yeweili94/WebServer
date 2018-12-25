@@ -3,6 +3,7 @@ set(net_SRCS
     Channel.cpp
     EventLoop.cpp
     Timer.cpp
+    EPollPoller.cpp
     )
 add_library(libserver_net ${net_SRCS})
 target_link_libraries(libserver_net pthread rt)

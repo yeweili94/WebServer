@@ -25,11 +25,8 @@ public:
     virtual ~Poller() {}
 
     virtual Timestamp poll(int timeoutMs, ChannelList* activeChannels) = 0;
-
     virtual void updateChannel(Channel* channel) = 0;
     virtual void removeChannel(Channel* channel) = 0;
-
-    static Poller* newDefaultPoller(EventLoop* loop);
 
     void assertInLoopThread()
     {
@@ -38,6 +35,7 @@ public:
 private:
     EventLoop* ownerLoop_;
 };
+
 
 }//namespace net
 }//namespace ywl

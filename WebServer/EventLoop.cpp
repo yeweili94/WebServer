@@ -1,6 +1,7 @@
 #include "EventLoop.h"
 #include "Channel.h"
 #include "Poller.h"
+#include "EPollPoller.h"
 #include "base/Logging.h"
 
 #include <poll.h>
@@ -20,8 +21,12 @@ EventLoop* EventLoop::getEventLoopOfCurrentThread()
 }
 
 EventLoop::EventLoop()
-    : looping_(false),
-      threadId_(CurrentThread::tid())
+    : quit_(false),
+      looping_(false),
+      eventHandling_(false),
+      threadId_(CurrentThread::tid()),
+      poller_(new EPollPoller(this)),
+      currentActiveChannel_(NULL)
 {
     LOG <<"EventLoop created " << this << "in thread " << threadId_;
 

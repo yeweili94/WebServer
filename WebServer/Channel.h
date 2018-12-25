@@ -68,10 +68,12 @@ private:
     static const int kWriteEvent;
 
     EventLoop* loop_;
+    //文件描述符
     const int fd_;
     int events_;
     //返回事件的类型
     int revents_;
+    //在epoll中表示状态
     int index_;
     bool logHup_;
 
