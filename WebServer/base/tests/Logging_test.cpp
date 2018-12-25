@@ -48,7 +48,7 @@ void stressing_single_thread()
     }
 }
 
-void stressing_multi_threads(int threadNum = 40)
+void stressing_multi_threads(int threadNum = 10)
 {
     // threadNum * 100000 lines
     cout << "----------stressing test multi thread-----------" << endl;
@@ -62,7 +62,6 @@ void stressing_multi_threads(int threadNum = 40)
     {
         vsp[i]->start();
     }
-    sleep(3);
 }
 
 void other()
@@ -78,6 +77,7 @@ int main()
     type_test();
     stressing_single_thread();
     other();
+    /* FATAL << "test fatal!\n"; */
     stressing_multi_threads();
     return 0;
 }
