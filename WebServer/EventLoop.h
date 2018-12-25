@@ -4,6 +4,7 @@
 #include "base/Mutex.h"
 #include "base/Thread.h"
 #include "base/Timestamp.h"
+#include "Channel.h"
 #include "TimerId.h"
 
 #include <boost/noncopyable.hpp>

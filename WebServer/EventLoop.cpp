@@ -104,8 +104,9 @@ void EventLoop::loop()
 void EventLoop::abortNotInLoopThread()
 {
     FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
-          << "was created in threadId_ = " << threadId_
+          << " was created in threadId_ = " << threadId_
           << ", current thread id = " << CurrentThread::tid();
+    exit(-1);
 }
 
 

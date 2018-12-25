@@ -8,9 +8,9 @@
 using namespace ywl;
 using namespace ywl::net;
 
-const int kNoneEvent = 0;
-const int kReadEvent = POLLOUT;
-const int kWrietEvent = POLLIN | POLLPRI;
+const int Channel::kNoneEvent = 0;
+const int Channel::kReadEvent = POLLOUT;
+const int Channel::kWriteEvent = POLLIN | POLLPRI;
 
 Channel::Channel(EventLoop* loop, int fd)
     : loop_(loop),
