@@ -1,7 +1,16 @@
-set(SRCS
+#net静态库
+set(net_SRCS
+    Channel.cpp
+    EventLoop.cpp
+    Timer.cpp
+    )
+add_library(libserver_net ${net_SRCS})
+target_link_libraries(libserver_net pthread rt)
+
+#binary file
+set(PROJECT_SRCS
     weakcallback.cpp
     )
-include_directories(${PROJECT_SOURCE_DIR}/base)
-add_executable(WebServer ${SRCS})
-target_link_libraries(WebServer libserver_base)
+add_executable(webserver ${PROJECT_SRCS})
 add_subdirectory(base)
+target_link_libraries(webserver libserver_base libserver_net)
