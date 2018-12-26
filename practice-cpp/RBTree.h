@@ -3,13 +3,22 @@
 
 #include <iostream>
 #include <iomanip>
-using namespace std;
+#include <assert.h>
+/* using namespace std; */
 
 enum class RBTColor
 {
     RED = 1,
     BLACK = 2
 };
+
+template<typename T>
+void swap(T& a, T& b)
+{
+    T c(std::move(a));
+    a = std::move(b);
+    b = std::move(c);
+}
 
 template <typename T>
 class RBTNode{
@@ -20,8 +29,13 @@ class RBTNode{
         RBTNode *right;    // 右孩子
         RBTNode *parent; // 父结点
 
-        RBTNode(T value, RBTColor c, RBTNode *p, RBTNode *l, RBTNode *r):
-            key(value),color(c),parent(),left(l),right(r) {}
+        RBTNode(T value, RBTColor color, 
+                RBTNode *parent, RBTNode *left, RBTNode *right):
+            key(value),
+            color(color),
+            parent(NULL),
+            left(left),
+            right(right) {}
 };
 
 template <typename T>
@@ -137,12 +151,10 @@ RBTree<T>::~RBTree()
 template <class T>
 void RBTree<T>::preOrder(RBTNode<T>* tree) const
 {
-    if(tree != NULL)
-    {
-        cout<< tree->key << " " ;
-        preOrder(tree->left);
-        preOrder(tree->right);
-    }
+    if (tree == NULL) return;
+    std::cout<< tree->key << " " ;
+    preOrder(tree->left);
+    preOrder(tree->right);
 }
 
 template <class T>
@@ -157,12 +169,10 @@ void RBTree<T>::preOrder()
 template <class T>
 void RBTree<T>::inOrder(RBTNode<T>* tree) const
 {
-    if(tree != NULL)
-    {
-        inOrder(tree->left);
-        cout<< tree->key << " " ;
-        inOrder(tree->right);
-    }
+    if (tree == NULL) return;
+    inOrder(tree->left);
+    std::cout<< tree->key << " " ;
+    inOrder(tree->right);
 }
 
 template <class T>
@@ -177,12 +187,10 @@ void RBTree<T>::inOrder()
 template <class T>
 void RBTree<T>::postOrder(RBTNode<T>* tree) const
 {
-    if(tree != NULL)
-    {
-        postOrder(tree->left);
-        postOrder(tree->right);
-        cout<< tree->key << " " ;
-    }
+    if (tree == NULL) return;
+    postOrder(tree->left);
+    postOrder(tree->right);
+    std::cout<< tree->key << " " ;
 }
 
 template <class T>
@@ -197,7 +205,7 @@ void RBTree<T>::postOrder()
 template <class T>
 RBTNode<T>* RBTree<T>::search(RBTNode<T>* x, T key) const
 {
-    if (x==NULL || x->key==key)
+    if (x == NULL || x->key == key)
         return x;
 
     if (key < x->key)
@@ -218,7 +226,7 @@ RBTNode<T>* RBTree<T>::search(T key)
 template <class T>
 RBTNode<T>* RBTree<T>::iterativeSearch(RBTNode<T>* x, T key) const
 {
-    while ((x!=NULL) && (x->key!=key))
+    while ((x != NULL) && (x->key != key))
     {
         if (key < x->key)
             x = x->left;
@@ -297,7 +305,7 @@ RBTNode<T>* RBTree<T>::successor(RBTNode<T> *x)
     // (01) x是"一个左孩子"，则"x的后继结点"为 "它的父结点"。
     // (02) x是"一个右孩子"，则查找"x的最低的父结点，并且该父结点要具有左孩子"，找到的这个"最低的父结点"就是"x的后继结点"。
     RBTNode<T>* y = x->parent;
-    while ((y!=NULL) && (x==y->right))
+    while ((y != NULL) && (x == y->right))
     {
         x = y;
         y = y->parent;
@@ -320,7 +328,7 @@ RBTNode<T>* RBTree<T>::predecessor(RBTNode<T> *x)
     // (01) x是"一个右孩子"，则"x的前驱结点"为 "它的父结点"。
     // (01) x是"一个左孩子"，则查找"x的最低的父结点，并且该父结点要具有右孩子"，找到的这个"最低的父结点"就是"x的前驱结点"。
     RBTNode<T>* y = x->parent;
-    while ((y!=NULL) && (x==y->left))
+    while ((y != NULL) && (x == y->left))
     {
         x = y;
         y = y->parent;
@@ -343,11 +351,14 @@ RBTNode<T>* RBTree<T>::predecessor(RBTNode<T> *x)
  *
  *
  */
+//调整的顺序为1.x->ly 2.y->px 3.x->y
 template <class T>
 void RBTree<T>::leftRotate(RBTNode<T>* &root, RBTNode<T>* x)
 {
-    // 设置x的右孩子为y
+    assert(root != NULL);
+    assert(x != NULL);
     RBTNode<T> *y = x->right;
+    assert(y != NULL);
 
     // 将 “y的左孩子” 设为 “x的右孩子”；
     // 如果y的左孩子非空，将 “x” 设为 “y的左孩子的父亲”
@@ -357,29 +368,27 @@ void RBTree<T>::leftRotate(RBTNode<T>* &root, RBTNode<T>* x)
 
     // 将 “x的父亲” 设为 “y的父亲”
     y->parent = x->parent;
-
     if (x->parent == NULL)
     {
-        root = y;            // 如果 “x的父亲” 是空节点，则将y设为根节点
+        root = y;  // 如果 “x的父亲” 是空节点，则将y设为根节点
     }
     else
     {
         if (x->parent->left == x)
-            x->parent->left = y;    // 如果 x是它父节点的左孩子，则将y设为“x的父节点的左孩子”
+            x->parent->left = y;  
         else
-            x->parent->right = y;    // 如果 x是它父节点的左孩子，则将y设为“x的父节点的左孩子”
+            x->parent->right = y; 
     }
     
-    // 将 “x” 设为 “y的左孩子”
+    //3.交换x和y的位置
     y->left = x;
-    // 将 “x的父节点” 设为 “y”
     x->parent = y;
 }
 
 /* 
  * 对红黑树的节点(y)进行右旋转
  *
- * 右旋示意图(对节点y进行左旋)：
+ * 右旋示意图(对节点y进行右旋)：
  *            py                               py
  *           /                                /
  *          y                                x                  
@@ -393,17 +402,21 @@ template <class T>
 void RBTree<T>::rightRotate(RBTNode<T>* &root, RBTNode<T>* y)
 {
     // 设置x是当前节点的左孩子。
+    assert(root != NULL);
+    assert(y != NULL);
     RBTNode<T> *x = y->left;
+    assert(x != NULL);
 
     // 将 “x的右孩子” 设为 “y的左孩子”；
     // 如果"x的右孩子"不为空的话，将 “y” 设为 “x的右孩子的父亲”
+    // 1.
     y->left = x->right;
     if (x->right != NULL)
         x->right->parent = y;
 
+    //2.
     // 将 “y的父亲” 设为 “x的父亲”
     x->parent = y->parent;
-
     if (y->parent == NULL) 
     {
         root = x;            // 如果 “y的父亲” 是空节点，则将x设为根节点
@@ -411,15 +424,13 @@ void RBTree<T>::rightRotate(RBTNode<T>* &root, RBTNode<T>* y)
     else
     {
         if (y == y->parent->right)
-            y->parent->right = x;    // 如果 y是它父节点的右孩子，则将x设为“y的父节点的右孩子”
+            y->parent->right = x;  
         else
-            y->parent->left = x;    // (y是它父节点的左孩子) 将x设为“x的父节点的左孩子”
+            y->parent->left = x;  
     }
 
-    // 将 “y” 设为 “x的右孩子”
+    //3.交换x和y的位置
     x->right = y;
-
-    // 将 “y的父节点” 设为 “x”
     y->parent = x;
 }
 
@@ -431,72 +442,61 @@ void RBTree<T>::rightRotate(RBTNode<T>* &root, RBTNode<T>* y)
  *
  * 参数说明：
  *     root 红黑树的根
- *     node 插入的结点        // 对应《算法导论》中的z
+ *     node 插入的结点       
  */
 template <class T>
 void RBTree<T>::insertFixUp(RBTNode<T>* &root, RBTNode<T>* node)
 {
+    assert(node != NULL);
     RBTNode<T> *parent, *gparent;
-
-    // 若“父节点存在，并且父节点的颜色是红色”
+    // 若“父节点存在，并且父节点的颜色是红色”,若为黑色则不违背特性，不用再更新了
     while ((parent = rb_parent(node)) && rb_is_red(parent))
     {
         gparent = rb_parent(parent);
-
         //若“父节点”是“祖父节点的左孩子”
         if (parent == gparent->left)
         {
             // Case 1条件：叔叔节点是红色
+            RBTNode<T> *uncle = gparent->right;
+            if (uncle && rb_is_red(uncle))
             {
-                RBTNode<T> *uncle = gparent->right;
-                if (uncle && rb_is_red(uncle))
-                {
-                    rb_set_black(uncle);
-                    rb_set_black(parent);
-                    rb_set_red(gparent);
-                    node = gparent;
-                    continue;
-                }
+                rb_set_black(uncle);
+                rb_set_black(parent);
+                rb_set_red(gparent);
+                node = gparent;
+                continue;
             }
 
-            // Case 2条件：叔叔是黑色，且当前节点是右孩子
+            // Case 2条件：叔叔是黑色，null也当做黑色,且当前节点是右孩子
             if (parent->right == node)
             {
-                RBTNode<T> *tmp;
                 leftRotate(root, parent);
-                tmp = parent;
-                parent = node;
-                node = tmp;
+                swap(node, parent);
             }
 
-            // Case 3条件：叔叔是黑色，且当前节点是左孩子。
+            // Case 3条件：叔叔是黑色，且当前节点是左孩子(经过2调整后，一定会达到条件３的状态)
             rb_set_black(parent);
             rb_set_red(gparent);
             rightRotate(root, gparent);
-        } 
-        else//若“z的父节点”是“z的祖父节点的右孩子”
+        } // if(parent == gparent-left)
+        else  //若“z的父节点”是“z的祖父节点的右孩子”
         {
             // Case 1条件：叔叔节点是红色
+            RBTNode<T> *uncle = gparent->left;
+            if (uncle && rb_is_red(uncle))
             {
-                RBTNode<T> *uncle = gparent->left;
-                if (uncle && rb_is_red(uncle))
-                {
-                    rb_set_black(uncle);
-                    rb_set_black(parent);
-                    rb_set_red(gparent);
-                    node = gparent;
-                    continue;
-                }
+                rb_set_black(uncle);
+                rb_set_black(parent);
+                rb_set_red(gparent);
+                node = gparent;
+                continue;
             }
 
             // Case 2条件：叔叔是黑色，且当前节点是左孩子
             if (parent->left == node)
             {
-                RBTNode<T> *tmp;
                 rightRotate(root, parent);
-                tmp = parent;
-                parent = node;
-                node = tmp;
+                swap(node, parent);
             }
 
             // Case 3条件：叔叔是黑色，且当前节点是右孩子。
@@ -527,14 +527,15 @@ void RBTree<T>::insert(RBTNode<T>* &root, RBTNode<T>* node)
     while (x != NULL)
     {
         y = x;
-        if (node->key < x->key)
+        if (node->key < x->key) {
             x = x->left;
-        else
+        } else {
             x = x->right;
+        }
     }
 
     node->parent = y;
-    if (y!=NULL)
+    if (y != NULL)
     {
         if (node->key < y->key)
             y->left = node;
@@ -542,7 +543,9 @@ void RBTree<T>::insert(RBTNode<T>* &root, RBTNode<T>* node)
             y->right = node;
     }
     else
+    {
         root = node;
+    }
 
     // 2. 设置节点的颜色为红色
     node->color = RBTColor::RED;
@@ -565,8 +568,10 @@ void RBTree<T>::insert(T key)
 
     // 如果新建结点失败，则返回。
     if ((z = new RBTNode<T>(key, RBTColor::BLACK, NULL, NULL, NULL)) == NULL)
-        return ;
-
+    {
+        perror("sys allocate failed!\n");
+        abort();
+    }
     insert(mRoot, z);
 }
 
@@ -822,9 +827,10 @@ void RBTree<T>::print(RBTNode<T>* tree, T key, int direction)
     if(tree != NULL)
     {
         if(direction==0)    // tree是根节点
-            cout << setw(2) << tree->key << "(B) is root" << endl;
+            std::cout << std::setw(2) << tree->key << "(B) is root" << std::endl;
         else                // tree是分支节点
-            cout << setw(2) << tree->key <<  (rb_is_red(tree)?"(R)":"(B)") << " is " << setw(2) << key << "'s "  << setw(12) << (direction==1?"right child" : "left child") << endl;
+            std::cout << std::setw(2) << tree->key <<  (rb_is_red(tree)?"(R)":"(B)") << " is " << std::setw(2) 
+            << key  << "'s "  << std::setw(12) << (direction==1?"right child" : "left child") << std::endl;
 
         print(tree->left, tree->key, -1);
         print(tree->right,tree->key,  1);
