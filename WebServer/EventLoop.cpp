@@ -28,11 +28,11 @@ EventLoop::EventLoop()
       poller_(new EPollPoller(this)),
       currentActiveChannel_(NULL)
 {
-    LOG <<"EventLoop created " << this << "in thread " << threadId_;
+    LOG <<"EventLoop created " << this << " in thread " << threadId_;
 
     if (t_loopInThisThread)
     {
-        FATAL << "Another EventLoop " << t_loopInThisThread
+        FATAL <<"Another EventLoop " << t_loopInThisThread
             << " exists in this thread " << threadId_;
     }
     else

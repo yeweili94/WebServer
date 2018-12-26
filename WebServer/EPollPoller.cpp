@@ -117,12 +117,12 @@ void EPollPoller::updateChannel(Channel* channel)
         assert(index == kAdded);
         if (channel->isNoneEvent())
         {
-            update(DEL, channel);
+            update(Operation::DEL, channel);
             channel->set_index(kDeleted);
         }
         else
         {
-            update(MOD, channel);
+            update(Operation::MOD, channel);
         }
     }
 }
@@ -143,7 +143,7 @@ void EPollPoller::removeChannel(Channel* channel)
     assert(n == 1);
     if (index == kAdded)
     {
-        update(DEL, channel);
+        update(Operation::DEL, channel);
     }
     channel->set_index(kNew);
 }
@@ -157,7 +157,7 @@ void EPollPoller::update(Operation ope, Channel* channel)
     int fd = channel->fd();
     if (::epoll_ctl(epollfd_, static_cast<int>(ope), fd, &event) < 0)
     {
-        if (ope == DEL)
+        if (ope == Operation::DEL)
         {
             LOG<< "SYSERR-epoll_ctl op=" << static_cast<int>(ope) << " fd=" << fd;
         }

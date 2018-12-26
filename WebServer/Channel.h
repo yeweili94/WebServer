@@ -46,19 +46,20 @@ public:
 
     void tie(const boost::shared_ptr<boost::any>&);
     int fd() const { return fd_; }
-    int events() const { return events_; }
-    void set_revents(int revt) {revents_ = revt; }
 
     bool isNoneEvent() const { return events_ == kNoneEvent; }
     bool isWriting() const { return events_ & kWriteEvent; }
 
     int index() { return index_; }
+    int events() const { return events_; }
     void set_index(int idx) { index_ = idx; }
+    void set_revents(int revt) {revents_ = revt; }
 
     void doNotLogHup() { logHup_ = false; }
 
     EventLoop* ownerLoop() { return loop_; }
     void remove();
+
 private:
     void update();
     void handleEventWithGuard(Timestamp receiveTime);
@@ -68,19 +69,15 @@ private:
     static const int kWriteEvent;
 
     EventLoop* loop_;
-    //文件描述符
-    const int fd_;
-    int events_;
-    //返回事件的类型
-    int revents_;
-    //在epoll中表示状态
-    int index_;
+    const int fd_;  //文件描述符
+    int events_;    //关注的事件
+    int revents_;   //在epoll中返回的事件
+    int index_;     //在epoll中表示Channel中的状态(added\removed\new)
     bool logHup_;
+    bool eventHandling_;
 
     boost::weak_ptr<boost::any> tie_;
     bool tied_;
-
-    bool eventHandling_;
 
     ReadEventCallback readCallback_;
     EventCallback writeCallback_;

@@ -22,9 +22,8 @@ public:
     ~ThreadPool();
 
     void start(int numThreads);
-    void stop();
-
     void run(const Task& f);
+    void stop();
 
 private:
     void runInThread();
@@ -33,7 +32,7 @@ private:
     MutexLock mutex_;
     Condition cond_;
     std::string name_;
-    boost::ptr_vector<ywl::Thread> threads_;
+    boost::ptr_vector<Thread> threads_;
     std::deque<Task> queue_;
     bool running_;
 };

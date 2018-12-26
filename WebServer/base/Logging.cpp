@@ -14,7 +14,7 @@ static pthread_once_t ponce_ = PTHREAD_ONCE_INIT;
 static ywl::AsyncLogging *AsyncLogger_;
 
 //初始化log文件名
-std::string ywl::Logger::logFileName_ = "../log/ywl_WebServer.log";
+std::string ywl::Logger::logFileName_ = "./ywl_WebServer.log";
 
 void once_init()
 {
