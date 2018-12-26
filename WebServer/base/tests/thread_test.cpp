@@ -46,13 +46,13 @@ int main()
   t1.join();
 
   ywl::Thread t2(boost::bind(threadFunc2, 42),
-                   "thread for free function with argument");
+                 "thread for free function with argument");
   t2.start();
   t2.join();
 
   Foo foo(87.53);
   ywl::Thread t3(boost::bind(&Foo::memberFunc, &foo),
-                   "thread for member function without argument");
+                 "thread for member function without argument");
   t3.start();
   t3.join();
 

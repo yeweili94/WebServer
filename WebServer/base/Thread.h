@@ -2,13 +2,16 @@
 #define WEB_SERVER_THREAD_H
 
 #include "Atomic.h"
+
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
+
+#include <atomic>
 #include <pthread.h>
 
 namespace ywl
 {
-using namespace detail;
+using namespace ywl::detail;
 class Thread : public boost::noncopyable
 {
 public:
@@ -22,7 +25,7 @@ public:
 
     bool started() const { return started_; }
     pid_t tid() const { return tid_; }
-    static int numCreated() { return numCreated_.get(); }
+    static int numCreated() { return numCreated_.fetch_add(0); }
 private:
     static void* startThread(void* arg);
     void runInThread();
@@ -33,7 +36,7 @@ private:
     ThreadFunc func_;
     std::string name_;
 
-    static AtomicInt32 numCreated_;
+    static std::atomic<int32_t> numCreated_;
 };
 
 

@@ -16,16 +16,20 @@ public:
     {
     }
 
+    ~AtomicIntegerT()
+    {
+    }
+
     T get()
     {
         return __sync_val_compare_and_swap(&value_, 0, 0);
     }
-
+    //返回更新之前的值
     T getAndAdd(T x)
     {
         return __sync_fetch_and_add(&value_, x);
     }
-
+    //返回更新之后的值
     T addAndGet(T x)
     {
         return getAndAdd(x) + x;

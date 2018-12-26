@@ -27,9 +27,10 @@ private:
     }
     static void destroy()
     {
-        typedef char T_must_be_complete_type[sizeof(T) == 0 ? -1 : 1];
+        typedef char T_MUST_BE_COMPLETE_TYPE[sizeof(T) == 0 ? -1 : 1];
         delete value_;
     }
+
 private:
     static T* value_;
     static pthread_once_t ponce_;

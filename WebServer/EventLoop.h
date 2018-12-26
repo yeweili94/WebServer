@@ -9,6 +9,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
+#include <boost/function.hpp>
 
 namespace ywl
 {
@@ -21,6 +22,7 @@ class Poller;
 class EventLoop : boost::noncopyable
 {
 public:
+    using Functor = boost::function<void()>;
     EventLoop();
     ~EventLoop();
 
@@ -28,6 +30,8 @@ public:
     void quit();
 
     Timestamp pollReturnTime() const { return pollReturnTime_; }
+    void runInLoop(const Functor& cb);
+    void queueInLoop(const Functor& cb);
 
     void updateChannel(Channel* channel);
     void removeChannel(Channel* channel);

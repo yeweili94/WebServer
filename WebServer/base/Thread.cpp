@@ -72,7 +72,7 @@ bool CurrentThread::isMainThread()
     return tid() == ::getpid();
 }
 
-AtomicInt32 Thread::numCreated_;
+std::atomic<int32_t> Thread::numCreated_;
 
 Thread::Thread(const ThreadFunc& func, const std::string& name)
     : started_(false),
@@ -81,7 +81,7 @@ Thread::Thread(const ThreadFunc& func, const std::string& name)
       func_(func),
       name_(name)
 {
-    numCreated_.increment();
+    numCreated_.fetch_add(1);
 }
 
 Thread::~Thread()
