@@ -1,8 +1,8 @@
 #ifndef WEB_SERVER_POLLER_H
 #define WEB_SERVER_POLLER_H
 
-#include "EventLoop.h"
-#include "base/Timestamp.h"
+#include <WebServer/EventLoop.h>
+#include <WebServer/base/Timestamp.h>
 
 #include <boost/noncopyable.hpp>
 

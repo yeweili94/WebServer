@@ -1,5 +1,5 @@
-#include "AsyncLogging.h"
-#include "LogFile.h"
+#include <WebServer/base/AsyncLogging.h>
+#include <WebServer/base/LogFile.h>
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>

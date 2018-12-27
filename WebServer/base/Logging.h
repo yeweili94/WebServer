@@ -1,8 +1,8 @@
 #ifndef WEB_SERVER_LOGGING_H
 #define WEB_SERVER_LOGGING_H
 
-#include "LogStream.h"
-#include "Timestamp.h"
+#include <WebServer/base/LogStream.h>
+#include <WebServer/base/Timestamp.h>
 
 #include <pthread.h>
 #include <string.h>

@@ -1,11 +1,11 @@
 #ifndef WEB_SERVER_EVENTLOOP_H
 #define WEB_SERVER_EVENTLOOP_H
 
-#include "base/Mutex.h"
-#include "base/Thread.h"
-#include "base/Timestamp.h"
-#include "Channel.h"
-#include "TimerId.h"
+#include <WebServer/base/Mutex.h>
+#include <WebServer/base/Thread.h>
+#include <WebServer/base/Timestamp.h>
+#include <WebServer/Channel.h>
+#include <WebServer/TimerId.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>

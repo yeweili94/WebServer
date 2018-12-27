@@ -1,7 +1,7 @@
 #ifndef WEB_SERVER_CONDITION
 #define WEB_SERVER_CONDITION
 
-#include "Mutex.h"
+#include <WebServer/base/Mutex.h>
 #include <boost/noncopyable.hpp>
 #include <pthread.h>
 

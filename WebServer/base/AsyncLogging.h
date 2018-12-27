@@ -1,9 +1,9 @@
 #ifndef WEB_SERVER_ASYNCLOGGING_H
 #define WEB_SERVER_ASYNCLOGGING_H
 
-#include "LogStream.h"
-#include "Thread.h"
-#include "CountDownLatch.h"
+#include <WebServer/base/LogStream.h>
+#include <WebServer/base/Thread.h>
+#include <WebServer/base/CountDownLatch.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>

@@ -1,6 +1,6 @@
-#include "../ThreadPool.h"
-#include "../CountDownLatch.h"
-#include "../CurrentThread.h"
+#include <WebServer/base/ThreadPool.h>
+#include <WebServer/base/CountDownLatch.h>
+#include <WebServer/base/CurrentThread.h>
 
 #include <boost/bind.hpp>
 #include <stdio.h>

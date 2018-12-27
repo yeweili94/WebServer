@@ -1,5 +1,5 @@
-#include "../Logging.h"
-#include "../Thread.h"
+#include <WebServer/base/Logging.h>
+#include <WebServer/base/Thread.h>
 
 #include <boost/shared_ptr.hpp>
 

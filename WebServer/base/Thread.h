@@ -1,7 +1,7 @@
 #ifndef WEB_SERVER_THREAD_H
 #define WEB_SERVER_THREAD_H
 
-#include "Atomic.h"
+#include <WebServer/base/Atomic.h>
 
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>

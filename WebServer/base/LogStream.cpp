@@ -1,4 +1,4 @@
-#include "LogStream.h"
+#include <WebServer/base/LogStream.h>
 
 #include <boost/static_assert.hpp>
 

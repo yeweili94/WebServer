@@ -1,8 +1,8 @@
 #ifndef WEB_SERVER_MUTEX_H
 #define WEB_SERVER_MUTEX_H
 
-#include "Thread.h"
-#include "CurrentThread.h"
+#include <WebServer/base/Thread.h>
+#include <WebServer/base/CurrentThread.h>
 
 #include <assert.h>
 #include <boost/noncopyable.hpp>

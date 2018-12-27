@@ -1,5 +1,5 @@
-#include "Thread.h"
-#include "CurrentThread.h"
+#include <WebServer/base/Thread.h>
+#include <WebServer/base/CurrentThread.h>
 
 #include <pthread.h>
 #include <stdio.h>

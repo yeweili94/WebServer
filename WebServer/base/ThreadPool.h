@@ -1,9 +1,9 @@
 #ifndef WEB_SERVER_THREAD_POOL_H
 #define WEB_SERVER_THREAD_POOL_H
 
-#include "Mutex.h"
-#include "Condition.h"
-#include "Thread.h"
+#include <WebServer/base/Mutex.h>
+#include <WebServer/base/Condition.h>
+#include <WebServer/base/Thread.h>
 
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>

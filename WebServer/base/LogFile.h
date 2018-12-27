@@ -1,8 +1,8 @@
 #ifndef WEB_SERVER_LOG_FILE_H
 #define WEB_SERVER_LOG_FILE_H
 
-#include "FileUtil.h"
-#include "Mutex.h"
+#include <WebServer/base/FileUtil.h>
+#include <WebServer/base/Mutex.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>

@@ -1,7 +1,7 @@
 #ifndef WEB_SERVER_CHANNEL_H
 #define WEB_SERVER_CHANNEL_H
 
-#include "base/Timestamp.h"
+#include <WebServer/base/Timestamp.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
