@@ -9,8 +9,8 @@ using namespace ywl;
 using namespace ywl::net;
 
 const int Channel::kNoneEvent = 0;
-const int Channel::kReadEvent = POLLOUT;
-const int Channel::kWriteEvent = POLLIN | POLLPRI;
+const int Channel::kReadEvent = POLLIN | POLLPRI;
+const int Channel::kWriteEvent = POLLOUT;
 
 Channel::Channel(EventLoop* loop, int fd)
     : loop_(loop),
@@ -53,6 +53,7 @@ void Channel::handleEvent(Timestamp receiveTime)
     boost::shared_ptr<void> guard;
     if (tied_)
     {
+        //延长生命周期
         guard = tie_.lock();
         if (guard)
         {

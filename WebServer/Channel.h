@@ -44,7 +44,7 @@ public:
     void disableWriting() { events_ &= ~kWriteEvent; update(); }
     void disableAll() { events_ = kNoneEvent; update(); }
 
-    void tie(const boost::shared_ptr<boost::any>&);
+    void tie(const boost::shared_ptr<boost::any>& any);
     int fd() const { return fd_; }
 
     bool isNoneEvent() const { return events_ == kNoneEvent; }

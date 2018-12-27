@@ -15,6 +15,7 @@ namespace ywl
 {
 namespace CurrentThread
 {
+    //__thread修饰的数据每个线程都会有一份，互不影响
     __thread int t_cachedTid = 0;
     __thread char t_tidString[32];
     __thread const char* t_threadName = "unknown";
@@ -23,6 +24,7 @@ namespace CurrentThread
     
 }//namespace CurrentThread
 
+//对外不可见
 namespace detail
 {
     pid_t gettid()
@@ -48,7 +50,7 @@ namespace detail
         }
     };
 
-    //鍒濆鍖栦富绾跨▼
+    //初始化主线程
     ThreadNameInitializer init;
 }//namespace detail
 }//namespace ywl

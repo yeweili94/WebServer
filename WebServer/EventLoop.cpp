@@ -4,7 +4,11 @@
 #include <WebServer/EPollPoller.h>
 #include <WebServer/base/Logging.h>
 
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+
 #include <poll.h>
+#include <sys/eventfd.h>
 
 using namespace ywl;
 using namespace ywl::net;
@@ -13,6 +17,17 @@ namespace
 {
 __thread EventLoop* t_loopInThisThread = 0;
 const int kPollTimeMs = 10000;
+
+int createEventfd()
+{
+    int etfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
+    if (etfd < 0)
+    {
+        FATAL << "Failed in create eventfd";
+    }
+    return etfd;
+}
+
 }
 
 EventLoop* EventLoop::getEventLoopOfCurrentThread()
@@ -26,19 +41,24 @@ EventLoop::EventLoop()
       eventHandling_(false),
       threadId_(CurrentThread::tid()),
       poller_(new EPollPoller(this)),
-      currentActiveChannel_(NULL)
+      currentActiveChannel_(NULL),
+      mutex_(),
+      wakeupFd_(createEventfd()),
+      wakeupChannel_(new Channel(this, wakeupFd_))
 {
-    LOG <<"EventLoop created " << this << " in thread " << threadId_;
+    LOG << "EventLoop created " << this << " in thread " << threadId_;
 
     if (t_loopInThisThread)
     {
-        FATAL <<"Another EventLoop " << t_loopInThisThread
+        FATAL << "Another EventLoop " << t_loopInThisThread
             << " exists in this thread " << threadId_;
     }
     else
     {
         t_loopInThisThread = this;
     }
+    wakeupChannel_->setReadCallback(boost::bind(&EventLoop::handleRead, this));
+    wakeupChannel_->enableReading();
 }
 
 EventLoop::~EventLoop()
@@ -46,12 +66,23 @@ EventLoop::~EventLoop()
     t_loopInThisThread = NULL;
 }
 
+//避免busy loop, 一定要把可读事件处理掉
+void EventLoop::handleRead()
+{
+    uint64_t onebyte = 1;
+    ssize_t n = ::read(wakeupFd_, &onebyte, sizeof onebyte);
+    if (n != sizeof onebyte)
+    {
+        LOG << "ERROR-EventLoop::handleRead() reads " << n << " bytes not 8";
+    }
+}
+
 void EventLoop::quit()
 {
     quit_ = true;
     if (!isInLoopThread())
     {
-        /* wakeup(); */
+        wakeup();
     }
 }
 
@@ -95,6 +126,7 @@ void EventLoop::loop()
         }
         currentActiveChannel_ = NULL;
         eventHandling_ = false;
+        dopendingFunctors();
     }
     
     LOG << "EventLoop " << this << " stop looping";
@@ -106,8 +138,59 @@ void EventLoop::abortNotInLoopThread()
     FATAL << "EventLoop::abortNotInLoopThread - EventLoop " << this
           << " was created in threadId_ = " << threadId_
           << ", current thread id = " << CurrentThread::tid();
-    exit(-1);
 }
 
+//该函数可以跨线程调用，在I/O线程中执行回调函数
+void EventLoop::runInLoop(const Functor& cb)
+{
+    if (isInLoopThread())
+    {
+        cb();
+    }
+    else
+    {
+        queueInLoop(cb);
+    }
+}
 
+void EventLoop::queueInLoop(const Functor& cb)
+{
+    {
+        MutexLockGuard lock(mutex_);
+        pendingFunctors_.push_back(cb);
+    }
+    //当调用queueInLoop的线程不是I/O线程时需要唤醒
+    //当调用queueInLoop的线程是I/O线程，并且此时正在调用pendingFunctor，需要唤醒
+    //在I/O线程的事件回调中调用queueInLoop才不用唤醒线程
+    if (!isInLoopThread() || callingPendingFunctors_)
+    {
+        wakeup();
+    }
+}
 
+//产生可读事件唤醒loop在epoll_wait处的阻塞
+//向wakeupFd_写入事件
+void EventLoop::wakeup()
+{
+    uint64_t onebyte = 1;
+    int n = ::write(onebyte, &wakeupFd_, sizeof onebyte);
+    if (n != sizeof onebyte)
+    {
+        LOG << "ERROR-EventLoop::wakeup() writes " << n << " bytes instead of 8";
+    }
+}
+
+void EventLoop::dopendingFunctors()
+{
+    std::vector<Functor> functors;
+    callingPendingFunctors_ = true;
+    {
+        MutexLockGuard lock(mutex_);
+        functors.swap(pendingFunctors_);
+    }
+    for (size_t i = 0; i < functors.size(); i++)
+    {
+        functors[i]();
+    }
+    callingPendingFunctors_ = false;
+}

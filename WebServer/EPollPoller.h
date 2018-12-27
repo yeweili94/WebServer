@@ -23,7 +23,7 @@ public:
     void removeChannel(Channel* channel) override;
 
 private:
-    enum class Operation
+    enum Operation
     {
         ADD = 1,    //EPOLL_CTL_ADD
         DEL = 2,    //EPOLL_CTL_DEL

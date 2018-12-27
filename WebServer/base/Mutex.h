@@ -50,6 +50,7 @@ public:
     {
         return &mutex_;
     }
+
 private:
     pthread_mutex_t mutex_;
     pid_t holder_;

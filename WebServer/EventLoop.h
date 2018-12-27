@@ -49,10 +49,13 @@ public:
     }
     static EventLoop* getEventLoopOfCurrentThread();
 
+    void wakeup();
+
 private:
     void abortNotInLoopThread();
+    void handleRead();
+    void dopendingFunctors();
 
-    // typedef std::vector<Channel*> ChannelList;
     using ChannelList = std::vector<Channel*>;
 
     bool quit_;
@@ -65,6 +68,14 @@ private:
 
     ChannelList activeChannels_;
     Channel* currentActiveChannel_;
+
+    MutexLock mutex_;
+
+    std::vector<Functor> pendingFunctors_;
+    bool callingPendingFunctors_;
+
+    int wakeupFd_;
+    boost::scoped_ptr<Channel> wakeupChannel_;
 };
 
 }

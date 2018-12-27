@@ -15,9 +15,9 @@ using namespace ywl::net;
 BOOST_STATIC_ASSERT(EPOLLIN == POLLIN);
 BOOST_STATIC_ASSERT(EPOLLPRI == POLLPRI);
 BOOST_STATIC_ASSERT(EPOLLOUT == POLLOUT);
-BOOST_STATIC_ASSERT(EPOLLRDHUP == POLLRDHUP);
 BOOST_STATIC_ASSERT(EPOLLERR == POLLERR);
 BOOST_STATIC_ASSERT(EPOLLHUP == POLLHUP);
+BOOST_STATIC_ASSERT(EPOLLRDHUP == POLLRDHUP);
 
 namespace
 {
@@ -60,7 +60,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activateChannels)
     }
     else if (numEvents == 0)
     {
-        LOG << " nothing happended";
+        LOG << "nothing happended";
     }
     else
     {
@@ -90,7 +90,8 @@ void EPollPoller::fillActiveChannels(int numEvents, ChannelList* activeChannels)
 void EPollPoller::updateChannel(Channel* channel)
 {
     Poller::assertInLoopThread();
-    LOG << " fd = " << channel->fd() << " events = " << channel->events();
+    LOG << "EPollPoller::updateChannel() fd = " << channel->fd() \
+        << " events = " << channel->events();
     const int index = channel->index();
     //add new one
     if (index == kNew || index == kDeleted)
@@ -158,13 +159,13 @@ void EPollPoller::update(Operation ope, Channel* channel)
     int fd = channel->fd();
     if (::epoll_ctl(epollfd_, static_cast<int>(ope), fd, &event) < 0)
     {
-        if (ope == Operation::DEL)
+        if (static_cast<int>(ope) == EPOLL_CTL_DEL)
         {
-            LOG<< "SYSERR-epoll_ctl op=" << static_cast<int>(ope) << " fd=" << fd;
+            LOG<< "SYSERR: epoll_ctl op = " << static_cast<int>(ope) << " fd = " << fd;
         }
         else
         {
-            FATAL << "epoll_ctl op=" << static_cast<int>(ope) << "fd=" << fd;
+            FATAL << "epoll_ctl op = " << static_cast<int>(ope) << " fd = " << fd;
         }
     }
 }
