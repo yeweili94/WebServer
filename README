@@ -9,6 +9,9 @@ valgrind检测内存泄漏
 3.日志分等级处理
 
 使用方式：
+编译之前确认已经安装boost:
+sudo apt-get install libboost-dev
+
 mkdir build;
 cd build; cmake ../ && make
 cd WebServer;
