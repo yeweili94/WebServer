@@ -80,6 +80,7 @@ void EPollPoller::fillActiveChannels(int numEvents, ChannelList* activeChannels)
         ChannelMap::const_iterator it = channels_.find(fd);
         assert(it != channels_.end());
         assert(it->second == channel);
+        it = channels_.end();
 
         channel->set_revents(events_[i].events);
         activeChannels->push_back(channel);

@@ -52,7 +52,8 @@ public:
 private:
     void abortNotInLoopThread();
 
-    typedef std::vector<Channel*> ChannelList;
+    // typedef std::vector<Channel*> ChannelList;
+    using ChannelList = std::vector<Channel*>;
 
     bool quit_;
     bool looping_;

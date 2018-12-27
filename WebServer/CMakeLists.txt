@@ -1,5 +1,4 @@
 #net静态库
-add_subdirectory(base)
 set(net_SRCS
     Channel.cpp
     EventLoop.cpp
@@ -7,12 +6,19 @@ set(net_SRCS
     EPollPoller.cpp
     )
 add_library(libserver_net ${net_SRCS})
-target_link_libraries(libserver_net libserver_base pthread rt)
+target_link_libraries(libserver_net libserver_base)
 
+install(TARGETS libserver_net DESTINATION lib)
 #binary file
-set(PROJECT_SRCS
-    weakcallback.cpp
+
+set(HEADERS
+    Channel.h
+    EventLoop.h
+    EPollPoller.h
+    Poller.h
+    Timer.h
+    TimerId.h
     )
-add_executable(webserver ${PROJECT_SRCS})
+install(FILES ${HEADERS} DESTINATION include/WebServer/net)
+
 add_subdirectory(test)
-target_link_libraries(webserver libserver_net)
