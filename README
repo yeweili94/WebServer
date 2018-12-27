@@ -13,7 +13,7 @@ valgrind检测内存泄漏
 sudo apt-get install libboost-dev
 
 mkdir build;
-cd build; cmake ../ && make
-cd WebServer;
+cd build; cmake .. && make
+cd bin
 
 enjoying...
