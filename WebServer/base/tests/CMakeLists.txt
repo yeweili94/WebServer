@@ -10,3 +10,5 @@ target_link_libraries(logging_test libserver_base)
 add_executable(timestamp_test TimeStamp_test.cpp)
 target_link_libraries(timestamp_test libserver_base)
 
+add_executable(dynamicthreadpool dynamicthreadpool_test.cpp)
+target_link_libraries(dynamicthreadpool libserver_base)

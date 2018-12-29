@@ -36,6 +36,10 @@ public:
     }
     void setCloseCallback(const EventCallback& cb)
     {
+        closeCallback_ = cb;
+    }
+    void setErrorCallback(const EventCallback& cb)
+    {
         errorCallback_ = cb;
     }
     void enableReading() { events_ |= kReadEvent; update();}
@@ -54,6 +58,7 @@ public:
     int events() const { return events_; }
     void set_index(int idx) { index_ = idx; }
     void set_revents(int revt) {revents_ = revt; }
+    void printRevent() const;
 
     void doNotLogHup() { logHup_ = false; }
 
