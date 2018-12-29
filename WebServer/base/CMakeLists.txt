@@ -9,6 +9,7 @@ set(base_SRC
     LogStream.cpp
     AsyncLogging.cpp
     Logging.cpp
+    DynamicThreadPool.cpp
     )
 add_library(libserver_base ${base_SRC})
 target_link_libraries(libserver_base pthread rt)
