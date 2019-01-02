@@ -4,8 +4,8 @@
 #include <WebServer/base/Mutex.h>
 #include <WebServer/base/Thread.h>
 #include <WebServer/base/Timestamp.h>
+#include <WebServer/Timer.h>
 #include <WebServer/Channel.h>
-#include <WebServer/TimerId.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -18,6 +18,7 @@ namespace net
 
 class Channel;
 class Poller;
+class TimerManager;
 
 class EventLoop : boost::noncopyable
 {
@@ -32,6 +33,12 @@ public:
     Timestamp pollReturnTime() const { return pollReturnTime_; }
     void runInLoop(const Functor& cb);
     void queueInLoop(const Functor& cb);
+
+    //定时任务
+    TimerId runAt(const Timestamp& time, const TimerCallback& cb);
+    TimerId runAfter(double delay, const TimerCallback& cb);
+    TimerId runEvery(double interval, const TimerCallback& cb);
+    void cancel(TimerId timerId);
 
     void updateChannel(Channel* channel);
     void removeChannel(Channel* channel);
@@ -65,6 +72,7 @@ private:
 
     Timestamp pollReturnTime_;
     boost::scoped_ptr<Poller> poller_;
+    boost::scoped_ptr<TimerManager> timerManager_;
 
     ChannelList activeChannels_;
     Channel* currentActiveChannel_;

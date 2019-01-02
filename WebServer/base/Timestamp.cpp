@@ -29,6 +29,7 @@ std::string Timestamp::toString() const
 std::string Timestamp::toFormattedString() const
 {
     char buf[32] = {0};
+    //typedef long int time_t
     time_t seconds = static_cast<time_t>(microSecondsSinceEpoch_ / KMicroSecondsPerSecond);
     int microseconds = static_cast<int>(microSecondsSinceEpoch_ % KMicroSecondsPerSecond);
     struct tm tm_time;

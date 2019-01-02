@@ -8,13 +8,13 @@
 void printString(const std::string& str)
 {
     printf("tid=%d, str=%s\n", ywl::CurrentThread::tid(), str.c_str());
+    // sleep(1);
 }
 
 int main()
 {
-    ywl::DynamicThreadPool pool(20);
-
-    for (int i = 0; i < 100; ++i)
+    ywl::DynamicThreadPool pool(10);
+    for (int i = 0; i < 1000000; ++i)
     {
         char buf[32];
         snprintf(buf, sizeof buf, "task %d", i);

@@ -13,7 +13,6 @@ void passByConstReference(const Timestamp& x)
 void passByValue(Timestamp x)
 {
       printf("%s\n", x.toString().c_str());
-
 }
 
 void benchmark()
@@ -29,7 +28,7 @@ void benchmark()
         printf("%s\n", stamps.front().toString().c_str());
         printf("%s\n", stamps.back().toString().c_str());
 
-        int increments[100] = { 0  };
+        int increments[100] = { 0 };
         int64_t start = stamps.front().microSecondsSinceEpoch();
         for (int i = 1; i < kNumber; ++i)
         {

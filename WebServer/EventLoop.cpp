@@ -41,6 +41,7 @@ EventLoop::EventLoop()
       eventHandling_(false),
       threadId_(CurrentThread::tid()),
       poller_(new EPollPoller(this)),
+      timerManager_(new TimerManager(this)),
       currentActiveChannel_(NULL),
       mutex_(),
       wakeupFd_(createEventfd()),
@@ -194,3 +195,27 @@ void EventLoop::dopendingFunctors()
     }
     callingPendingFunctors_ = false;
 }
+
+TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)
+{
+    return timerManager_->addTimer(cb, time, 0);
+}
+
+TimerId EventLoop::runAfter(double delay, const TimerCallback& cb)
+{
+    Timestamp time(addTime(Timestamp::now(), delay));
+    return runAt(time, cb);
+}
+
+TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
+{
+    assert(interval > 0);
+    Timestamp time(addTime(Timestamp::now(), interval));
+    return timerManager_->addTimer(cb, time, interval);
+}
+
+void EventLoop::cancel(TimerId timerId)
+{
+    return timerManager_->cancel(timerId);
+}
+

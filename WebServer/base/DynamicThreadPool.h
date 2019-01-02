@@ -39,7 +39,7 @@ private:
     bool shutdown_;
     std::queue<boost::function<void()>> callbacks_;
     int reserve_threads_;
-    int nthreads_;
+    int loop_threads_;
     int threads_waiting_;
     std::list<DynamicThread*> dead_threads_;
 

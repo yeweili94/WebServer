@@ -15,6 +15,7 @@ namespace net
 {
 
 using EventCallback = boost::function<void()>;
+//这里需要提供参数timestamp是为了方便加入时间管理
 using ReadEventCallback = boost::function<void(Timestamp)>;
 class EventLoop;
 
@@ -58,7 +59,7 @@ public:
     int events() const { return events_; }
     void set_index(int idx) { index_ = idx; }
     void set_revents(int revt) {revents_ = revt; }
-    void printRevent() const;
+    // void printRevent() const;
 
     void doNotLogHup() { logHup_ = false; }
 
