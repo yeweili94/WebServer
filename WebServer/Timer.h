@@ -107,6 +107,8 @@ private:
     EventLoop* loop_;   //所属的EventLoop
     const int timerfd_; //唤醒时写入的文件描述符
     Channel timerfdChannel_;    
+    //为了cancel timer，方便查找定时器，所以这里维护两个
+    //按照不同顺序的堆
     TimerList timers_;  //按照timestamp排序
     ActiveTimerSet activeTimers_;   //按照对象地址排序
     bool callingExpiredTimers_; 
@@ -115,4 +117,5 @@ private:
 
 }
 }
+
 #endif
