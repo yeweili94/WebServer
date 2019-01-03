@@ -78,7 +78,7 @@ private:
     const int fd_;  //文件描述符
     int events_;    //关注的事件
     int revents_;   //在epoll中返回的事件
-    int index_;     //在epoll中表示Channel中的状态(added\removed\new)
+    int index_;     //在epoll中表示Channel中的状态(added/removed/new)
     bool logHup_;
     bool eventHandling_;
 

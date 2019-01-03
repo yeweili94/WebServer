@@ -14,15 +14,14 @@ namespace net
 {
 
 class EventLoop;
+using ThreadInitCallback = boost::function<void(EventLoop*)>;
+
 class EventLoopThread : boost::noncopyable
 {
 public:
-    using ThreadInitCallback = boost::function<void(EventLoop*)>;
-
     EventLoopThread(const ThreadInitCallback& cb = ThreadInitCallback());
     ~EventLoopThread();
     EventLoop* startLoop();
-
 private:
     void threadFunc();  //Ïß³Ìº¯Êý
 
@@ -34,14 +33,15 @@ private:
     ThreadInitCallback callback_;
 };
 
+////////////////////////////////////////////////////////////////////////
 class EventLoopThreadPool : boost::noncopyable
 {
 public:
-    typedef boost::function<void(EventLoop*)> ThreadInitCallback;
-
     EventLoopThreadPool(EventLoop* mainLoop);
     ~EventLoopThreadPool();
-    void setThreadNum(int numThreads) {}
+    void setThreadNum(int numThreads) {
+        numThreads_ = numThreads;
+    }
     void start(const ThreadInitCallback& cb = ThreadInitCallback());
     EventLoop* getNextLoop();
 

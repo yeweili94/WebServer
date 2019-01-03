@@ -9,7 +9,7 @@ using namespace ywl::net;
 EventLoopThread::EventLoopThread(const ThreadInitCallback& cb)
     : loop_(NULL),
       exiting_(false),
-      thread_(boost::bind(&EventLoopThread::threadFunc, this), "EventLoopThread"),
+      thread_(boost::bind(&EventLoopThread::threadFunc, this)), 
       mutex_(),
       cond_(mutex_),
       callback_(cb)
@@ -50,7 +50,7 @@ void EventLoopThread::threadFunc()
     }
     loop.loop();
     assert(exiting_);
-    loop_ = NULL;
+    // loop_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

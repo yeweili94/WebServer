@@ -64,7 +64,7 @@ Timestamp EPollPoller::poll(int timeoutMs, ChannelList* activateChannels)
     }
     else
     {
-        FATAL << " SYSERR-EpollPoller::poll()";
+        FATAL << "SYSERR-EpollPoller::poll()";
     }
     return now;
 }
@@ -133,7 +133,7 @@ void EPollPoller::removeChannel(Channel* channel)
 {
     Poller::assertInLoopThread();
     int fd = channel->fd();
-    LOG << " fd = " << fd;
+    LOG << "fd = " << fd;
     assert(channels_.find(fd) != channels_.end());
     assert(channels_[fd] == channel);
     assert(channel->isNoneEvent());

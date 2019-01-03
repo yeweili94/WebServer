@@ -23,12 +23,7 @@ public:
     void removeChannel(Channel* channel) override;
 
 private:
-    enum Operation
-    {
-        ADD = 1,    //EPOLL_CTL_ADD
-        DEL = 2,    //EPOLL_CTL_DEL
-        MOD = 3     //EPOLL_CTL_MOD
-    };
+    enum Operation{ ADD = 1, DEL = 2, MOD = 3 }; //EPOLL_ADD, EPOLL_DEL, EPOLL_MOD
     static const int kInitEventListSize = 16;   //返回事件初始化大小，以二倍增长速度扩容
 
     void fillActiveChannels(int numEvents, ChannelList* activeChannels) const;

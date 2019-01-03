@@ -123,6 +123,7 @@ TimerId TimerManager::addTimer(const TimerCallback& cb,
 void TimerManager::addTimerInLoop(Timer* timer)
 {
     loop_->assertInLoopThread();
+    //插入一个定时器，有可能会改变优先队列最早到期时间
     bool earlistChanged = insert(timer);
     if (earlistChanged)
     {
