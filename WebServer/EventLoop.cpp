@@ -26,7 +26,7 @@ int createEventfd()
     int evtfd = ::eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC);
     if (evtfd < 0)
     {
-        // LOG << "Failed in eventfd";
+        LOG << "Failed in eventfd";
         abort();
     }
     return evtfd;
@@ -51,7 +51,7 @@ EventLoop::EventLoop()
     wakeupChannel_(new Channel(this, wakeupFd_)),
     currentActiveChannel_(NULL)
 {
-    // LOG << "EventLoop created " << this << " in thread " << threadId_;
+    LOG << "EventLoop created " << this << " in thread " << threadId_;
     // 如果当前线程已经创建了EventLoop对象，终止(LOG_FATAL)
     if (t_loopInThisThread)
     {
@@ -79,23 +79,19 @@ EventLoop::~EventLoop()
 void EventLoop::loop()
 {
     assert(!looping_);
-    // 断言当前处于创建该对象的线程中
+    // 当前处于创建该对象的线程中
     assertInLoopThread();
     looping_ = true;
     quit_ = false;
-    // LOG << "EventLoop " << this << " start looping";
+    LOG << "EventLoop " << this << " start looping";
 
-    //::poll(NULL, 0, 5*1000);
     while (!quit_)
     {
         activeChannels_.clear();
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
-        //++iteration_;
-        // if (Logger::logLevel() <= Logger::TRACE)
         {
             printActiveChannels();
         }
-        // TODO sort channel by priority
         eventHandling_ = true;
         for (ChannelList::iterator it = activeChannels_.begin();
             it != activeChannels_.end(); ++it)
@@ -108,7 +104,7 @@ void EventLoop::loop()
         doPendingFunctors();
     }
 
-    // LOG << "EventLoop " << this << " stop looping";
+    LOG << "EventLoop " << this << " stop looping";
     looping_ = false;
 }
 
@@ -153,28 +149,6 @@ void EventLoop::queueInLoop(const Functor& cb)
     }
 }
 
-// TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)
-// {
-//   return timerQueue_->addTimer(cb, time, 0.0);
-// }
-
-// TimerId EventLoop::runAfter(double delay, const TimerCallback& cb)
-// {
-//   Timestamp time(addTime(Timestamp::now(), delay));
-//   return runAt(time, cb);
-// }
-
-// TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
-// {
-//   Timestamp time(addTime(Timestamp::now(), interval));
-//   return timerQueue_->addTimer(cb, time, interval);
-// }
-
-// void EventLoop::cancel(TimerId timerId)
-// {
-//   return timerQueue_->cancel(timerId);
-// }
-
 void EventLoop::updateChannel(Channel* channel)
 {
     assert(channel->ownerLoop() == this);
@@ -209,7 +183,7 @@ void EventLoop::wakeup()
     ssize_t n = ::write(wakeupFd_, &one, sizeof one);
     if (n != sizeof one)
     {
-        // LOG << "EventLoop::wakeup() writes " << n << " bytes instead of 8";
+        LOG << "EventLoop::wakeup() writes " << n << " bytes instead of 8";
     }
 }
 
