@@ -6,6 +6,7 @@ set(net_SRCS
     EPollPoller.cpp
     EventLoopThread.cpp
     Util.cpp
+    Acceptor.cpp
     )
 add_library(libserver_net ${net_SRCS})
 target_link_libraries(libserver_net libserver_base)
@@ -20,6 +21,7 @@ set(HEADERS
     Poller.h
     Timer.h
     TimerId.h
+    Acceptor.h
     )
 install(FILES ${HEADERS} DESTINATION include/WebServer/net)
 
