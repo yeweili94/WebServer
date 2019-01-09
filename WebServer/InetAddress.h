@@ -1,10 +1,7 @@
 #ifndef WEBSERVER_INETADDRESS_H
 #define WEBSERVER_INETADDRESS_H
 
-#include <WebServer/Util.h>
-
 #include <netinet/in.h>
-#include <strings.h>
 
 #include <string>
 
@@ -31,27 +28,6 @@ private:
     struct sockaddr_in addr_;
 };
 
-InetAddress::InetAddress(uint16_t port)
-{
-    bzero(&addr_, sizeof addr_);
-    addr_.sin_family = AF_INET;
-    addr_.sin_addr.s_addr = sockets::hostToNetwork32(INADDR_ANY);
-    addr_.sin_port = sockets::hostToNetwork16(port);
-}
-
-std::string InetAddress::toIpPort () const
-{
-    char buf[32];
-    sockets::toIpPortString(buf, sizeof buf, addr_);
-    return buf;
-}
-
-std::string InetAddress::toIp() const
-{
-    char buf[32];
-    sockets::toIpString(buf, sizeof buf, addr_);
-    return buf;
-}
 
 }
 }
