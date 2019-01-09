@@ -20,6 +20,22 @@ public:
     typedef boost::function<void (int sockfd, const InetAddress&)> NewConnectionCallback;
     Acceptor(EventLoop* loop, const InetAddress& listenAddr);
     ~Acceptor();
+
+    void setNewConnectionCallback(const NewConnectionCallback& cb)
+    {
+        NewConnectionCallback_ = cb;
+    }
+    bool listenning() const {  return listenning_; }
+    void listen();
+private:
+    void handleRead();
+
+    EventLoop* loop_;
+    Socket acceptSocket_;
+    Channel acceptChannel_;
+    NewConnectionCallback NewConnectionCallback_;
+    bool listenning_;
+    int idleFd_;
 };
 
 }
