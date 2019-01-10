@@ -46,12 +46,12 @@ public:
     EventLoop* getNextLoop();
 
 private:
-    EventLoop *mainLoop_;
-    int numThreads_;
-    int next_;
+    EventLoop *mainLoop_;   //acceptor所属的eventLoop
+    int numThreads_;    //线程数
+    int next_;  //新连接到来，所选则的EventLoop对象下标
     bool started_;
-    boost::ptr_vector<EventLoopThread> threads_;
-    std::vector<EventLoop*> loops_;
+    boost::ptr_vector<EventLoopThread> threads_;    //IO线程列表
+    std::vector<EventLoop*> loops_; //EventLoop列表
 };
 
 

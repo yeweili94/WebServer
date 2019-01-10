@@ -19,10 +19,15 @@ int main()
     EventLoopThread loopThread;
     EventLoop* loop = loopThread.startLoop();
     //异步调用runInLoop
-    // loop->runInLoop(boost::bind(funInthread));
-    sleep(2);
+    loop->runInLoop(boost::bind(funInthread));
+    // sleep(2);
     //异步调用
     // loop->runAfter(2, boost::bind(funInthread));
+    loop->runInLoop(boost::bind(funInthread));
+    loop->runInLoop(boost::bind(funInthread));
+    loop->runAfter(2, boost::bind(funInthread));
+    loop->runEvery(3, boost::bind(funInthread));
+    sleep(20);
     loop->quit();
     printf("main() exit\n");
 }

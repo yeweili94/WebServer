@@ -17,10 +17,10 @@ Channel::Channel(EventLoop* loop, int fd)
       fd_(fd),
       events_(0),
       revents_(0),
-      index_(-1),
+      status_(-1),
       logHup_(true),
-      eventHandling_(false),
-      tied_(false)
+      tied_(false),
+      eventHandling_(false)
 {
 
 }
@@ -30,7 +30,7 @@ Channel::~Channel()
     assert(!eventHandling_);
 }
 
-void Channel::tie(const boost::shared_ptr<boost::any>& obj)
+void Channel::tie(const boost::shared_ptr<void>& obj)
 {
     tie_ = obj;
     tied_ = true;
@@ -79,14 +79,14 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
     {
         if (logHup_)
         {
-            LOG << "Channel::handle_event() POLLHUP";
+            // LOG << "Channel::handle_event() POLLHUP";
         }
         if (closeCallback_) closeCallback_();
     }
 
     if (revents_ & POLLNVAL)
     {
-        LOG << "Channel::handle_event() POLLNVAL";
+        // LOG << "Channel::handle_event() POLLNVAL";
     }
 
     if (revents_ & (POLLERR | POLLNVAL))

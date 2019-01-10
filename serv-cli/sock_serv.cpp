@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <endian.h>
 #include <poll.h>
 
 #include <stdlib.h>
@@ -35,7 +36,7 @@ int main() {
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(5100);
+    servaddr.sin_port = htobe16(5100);
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     int on = 1;

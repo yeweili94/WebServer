@@ -28,7 +28,7 @@ public:
 
     void swap(Timestamp& that)
     {
-        ywl::swap(microSecondsSinceEpoch_, that.microSecondsSinceEpoch_);
+        std::swap(microSecondsSinceEpoch_, that.microSecondsSinceEpoch_);
     }
 
     std::string toString() const;

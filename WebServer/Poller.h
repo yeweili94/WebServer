@@ -20,7 +20,7 @@ class Poller
 public:
     using ChannelList = std::vector<Channel*>;
 
-    Poller(EventLoop* loop) {ownerLoop_ = loop;}
+    Poller(EventLoop* loop) : ownerLoop_(loop) {}
     virtual ~Poller() {}
 
     virtual Timestamp poll(int timeoutMs, ChannelList* activeChannels) = 0;

@@ -14,81 +14,78 @@ namespace ywl
 namespace net
 {
 
-using EventCallback = boost::function<void()>;
 //这里需要提供参数timestamp是为了方便加入时间管理
-using ReadEventCallback = boost::function<void(Timestamp)>;
 class EventLoop;
-
-class Channel : public boost::noncopyable
+class Channel : boost::noncopyable
 {
-public:
-    explicit Channel(EventLoop* loop, int fd);
-    ~Channel();
+ public:
+  typedef boost::function<void()> EventCallback;
+  typedef boost::function<void(Timestamp)> ReadEventCallback;
 
-    //epoll_wait返回的时间
-    void handleEvent(Timestamp receiveTime);
-    void setReadCallback(const ReadEventCallback& cb)
-    {
-        readCallback_ = cb;
-    }
-    void setWriteCallback(const EventCallback& cb)
-    {
-        writeCallback_ = cb;
-    }
-    void setCloseCallback(const EventCallback& cb)
-    {
-        closeCallback_ = cb;
-    }
-    void setErrorCallback(const EventCallback& cb)
-    {
-        errorCallback_ = cb;
-    }
-    void enableReading() { events_ |= kReadEvent; update();}
-    void disableReading() { events_ &= ~kWriteEvent; update(); }
-    void enableWriting() { events_ |= kWriteEvent; update(); }
-    void disableWriting() { events_ &= ~kWriteEvent; update(); }
-    void disableAll() { events_ = kNoneEvent; update(); }
+  Channel(EventLoop* loop, int fd);
+  ~Channel();
 
-    void tie(const boost::shared_ptr<boost::any>& any);
-    int fd() const { return fd_; }
+  void handleEvent(Timestamp receiveTime);
+  void setReadCallback(const ReadEventCallback& cb)
+  { readCallback_ = cb; }
+  void setWriteCallback(const EventCallback& cb)
+  { writeCallback_ = cb; }
+  void setCloseCallback(const EventCallback& cb)
+  { closeCallback_ = cb; }
+  void setErrorCallback(const EventCallback& cb)
+  { errorCallback_ = cb; }
 
-    bool isNoneEvent() const { return events_ == kNoneEvent; }
-    bool isWriting() const { return events_ & kWriteEvent; }
+  /// Tie this channel to the owner object managed by shared_ptr,
+  /// prevent the owner object being destroyed in handleEvent.
+  void tie(const boost::shared_ptr<void>&);
 
-    int index() { return index_; }
-    int events() const { return events_; }
-    void set_index(int idx) { index_ = idx; }
-    void set_revents(int revt) {revents_ = revt; }
-    // void printRevent() const;
+  int fd() const { return fd_; }
+  int events() const { return events_; }
+  void set_revents(int revt) { revents_ = revt; } // used by pollers
+  int revents() const { return revents_; }
+  bool isNoneEvent() const { return events_ == kNoneEvent; }
 
-    void doNotLogHup() { logHup_ = false; }
+  void enableReading() { events_ |= kReadEvent; update(); }
+  void disableReading() { events_ &= ~kReadEvent; update(); }
+  void enableWriting() { events_ |= kWriteEvent; update(); }
+  void disableWriting() { events_ &= ~kWriteEvent; update(); }
+  void disableAll() { events_ = kNoneEvent; update(); }
+  bool isWriting() const { return events_ & kWriteEvent; }
 
-    EventLoop* ownerLoop() { return loop_; }
-    void remove();
+  // for Poller
+  int status() { return status_; }
+  void set_status(int idx) { status_ = idx; }
 
-private:
-    void update();
-    void handleEventWithGuard(Timestamp receiveTime);
+  // for debug
+  std::string reventsToString() const;
 
-    static const int kNoneEvent;
-    static const int kReadEvent;
-    static const int kWriteEvent;
+  void doNotLogHup() { logHup_ = false; }
 
-    EventLoop* loop_;
-    const int fd_;  //文件描述符
-    int events_;    //关注的事件
-    int revents_;   //在epoll中返回的事件
-    int index_;     //在epoll中表示Channel中的状态(added/removed/new)
-    bool logHup_;
-    bool eventHandling_;
+  EventLoop* ownerLoop() { return loop_; }
+  void remove();
 
-    boost::weak_ptr<boost::any> tie_;
-    bool tied_;
+ private:
+  void update();
+  void handleEventWithGuard(Timestamp receiveTime);
 
-    ReadEventCallback readCallback_;
-    EventCallback writeCallback_;
-    EventCallback closeCallback_;
-    EventCallback errorCallback_;
+  static const int kNoneEvent;
+  static const int kReadEvent;
+  static const int kWriteEvent;
+
+  EventLoop* loop_;
+  const int  fd_;
+  int        events_;
+  int        revents_;
+  int        status_; // used by Poller.
+  bool       logHup_;
+
+  boost::weak_ptr<void> tie_;
+  bool tied_;
+  bool eventHandling_;
+  ReadEventCallback readCallback_;
+  EventCallback writeCallback_;
+  EventCallback closeCallback_;
+  EventCallback errorCallback_;
 };
 
 }

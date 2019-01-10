@@ -5,9 +5,17 @@ using namespace ywl::net;
 
 EventLoop* g_loop;
 
+void print()
+{
+    printf("love you\n");
+}
+
 void threadFunc()
 {
-    g_loop->loop();
+    sleep(1);
+    g_loop->runInLoop(print);
+    sleep(1);
+    g_loop->quit();
 }
 
 int main()
@@ -16,6 +24,7 @@ int main()
     g_loop = &loop;
     Thread t(threadFunc);
     t.start();
+    loop.loop();
     t.join();
     return 0;
 }

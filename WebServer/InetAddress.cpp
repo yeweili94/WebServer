@@ -14,6 +14,12 @@ InetAddress::InetAddress(uint16_t port)
     addr_.sin_port = sockets::hostToNetwork16(port);
 }
 
+InetAddress::InetAddress(const std::string& ip, uint16_t port)
+{
+    bzero(&addr_, sizeof addr_);
+    sockets::fromIpPortToNetwork(ip.c_str(), port, &addr_);
+}
+
 std::string InetAddress::toIpPort() const
 {
     char buf[32];

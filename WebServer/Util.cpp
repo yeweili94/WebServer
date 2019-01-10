@@ -12,7 +12,7 @@ void sockets::setNonBlockingAndCloseOnExec(int sockfd)
 {
     int flags = ::fcntl(sockfd, F_GETFL, 0);
     flags |= O_NONBLOCK;
-    int ret = ::fcntl(sockfd, F_SETFL, 0);
+    int ret = ::fcntl(sockfd, F_SETFL, flags);
 
     flags = ::fcntl(sockfd, F_GETFD, 0);
     flags |= FD_CLOEXEC;

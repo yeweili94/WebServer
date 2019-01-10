@@ -12,3 +12,6 @@ target_link_libraries(reactor_test04 libserver_net)
 
 add_executable(EventLoopThread_test EventLoopThread_test.cpp)
 target_link_libraries(EventLoopThread_test libserver_net)
+
+add_executable(Acceptor_test Acceptor_test.cpp)
+target_link_libraries(Acceptor_test libserver_net)
