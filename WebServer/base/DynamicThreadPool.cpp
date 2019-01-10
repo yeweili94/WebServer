@@ -33,14 +33,15 @@ void DynamicThreadPool::ThreadFunc() {
         //wait until work is available or shutdown
         std::unique_lock<std::mutex> lock(mutex_);
         if (!shutdown_ && callbacks_.empty()) {
-            // if (threads_waiting_ > reserve_threads_) {
-                // break;
-            // }
+            if (threads_waiting_ > reserve_threads_) {
+                break;
+            }
             threads_waiting_++;
             cond_.wait(lock);
             threads_waiting_--;
         }
 
+        //even thought the shutdown_ is set, if there are callbacks_ we need to solve
         if (!callbacks_.empty()) {
             auto cb = callbacks_.front();
             callbacks_.pop();
@@ -87,7 +88,7 @@ void DynamicThreadPool::Add(const boost::function<void()>& callback) {
     //Add works to thre callback list
     callbacks_.push(callback);
     //increse pool size or notify as needed
-    if ((threads_waiting_ == 0) && (loop_threads_ < 2 * reserve_threads_)) {
+    if ((threads_waiting_ == 0) && (loop_threads_ < 2*reserve_threads_)) {
         loop_threads_++;
         new DynamicThread(this);
     } else if (threads_waiting_ != 0){

@@ -14,7 +14,7 @@ using namespace ywl::net;
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr)
     : loop_(loop),
-      acceptSocket_(sockets::createNonBlocking()),
+      acceptSocket_(sockets::createNonBlockSocketfd()),
       acceptChannel_(loop, acceptSocket_.fd()),
       listenning_(false),
       idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC))

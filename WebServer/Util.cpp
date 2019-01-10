@@ -21,7 +21,7 @@ void sockets::setNonBlockingAndCloseOnExec(int sockfd)
     (void)ret;
 }
 
-int sockets::createNonBlocking()
+int sockets::createNonBlockSocketfd()
 {
     int sockfd = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sockfd < 0) {

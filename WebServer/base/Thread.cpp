@@ -23,6 +23,7 @@ namespace CurrentThread
     BOOST_STATIC_ASSERT(sameType);
     
 }//namespace CurrentThread
+//////////////////////////////////////////////////////////////////////////////////
 
 //对外不可见
 namespace detail
@@ -52,9 +53,10 @@ namespace detail
 
     //初始化主线程
     ThreadNameInitializer init;
+
 }//namespace detail
 }//namespace ywl
-
+//////////////////////////////////////////////////////////////////////////////////
 
 using namespace ywl;
 
@@ -73,6 +75,7 @@ bool CurrentThread::isMainThread()
 {
     return tid() == ::getpid();
 }
+//////////////////////////////////////////////////////////////////////////////////
 
 std::atomic<int32_t> Thread::numCreated_;
 

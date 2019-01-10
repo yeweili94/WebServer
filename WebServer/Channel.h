@@ -22,6 +22,9 @@ class Channel : boost::noncopyable
   typedef boost::function<void()> EventCallback;
   typedef boost::function<void(Timestamp)> ReadEventCallback;
 
+  //channel类虽然是和文件描述符fd相互绑定的类,但是
+  //却并不负责关闭fd，原因是这个fd,是在构造时候从外部传进来的
+  //谁污染，谁治理，RAII封装
   Channel(EventLoop* loop, int fd);
   ~Channel();
 

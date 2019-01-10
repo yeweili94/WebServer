@@ -46,10 +46,10 @@ inline uint16_t networkToHost16(uint16_t net16)
 {
   return be16toh(net16);
 }
-
 ////////////////////////////////////////////////////////////////////////
+
 void setNonBlockingAndCloseOnExec(int sockfd);
-int createNonBlocking();
+int createNonBlockSocketfd();
 
 int Connect(int sockfd, const struct sockaddr_in& addr);
 void Bind(int sockfd, const struct sockaddr_in& addr);
