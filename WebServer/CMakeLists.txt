@@ -9,6 +9,7 @@ set(net_SRCS
     Socket.cpp
     InetAddress.cpp
     Acceptor.cpp
+    TcpConnection.cpp
     )
 add_library(libserver_net ${net_SRCS})
 target_link_libraries(libserver_net libserver_base)
@@ -27,6 +28,7 @@ set(HEADERS
     Socket.h
     InetAddress.h
     Acceptor.h
+    TcpConnection.h
     )
 install(FILES ${HEADERS} DESTINATION include/WebServer/net)
 

@@ -17,6 +17,7 @@ namespace net
 
 class TcpConnection;
 typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
+
 typedef boost::function<void(const TcpConnectionPtr&)> ConnectionCallback;
 typedef boost::function<void(const TcpConnectionPtr&)> CloseCallback;
 typedef boost::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
@@ -73,15 +74,15 @@ private:
     enum StateE {Connecting, Connected, Disconnecting, Disconnected};
 
     void setState(StateE s) { state_ = s; }
-    void handleRead();
+    void handleRead(Timestamp receiveTime);
     void handleWrite();
     void handleClose();
     void handleError();
     void sendInLoop(const void* message, size_t len);
     void shutdownInLoop();
 
-    StateE state_;
     EventLoop* loop_;
+    StateE state_;
     std::string name_;
     boost::scoped_ptr<Socket> socket_;
     boost::scoped_ptr<Channel> channel_;
