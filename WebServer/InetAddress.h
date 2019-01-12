@@ -21,8 +21,10 @@ public:
     {}
     std::string toIp() const;
     std::string toIpPort() const;
+
     const struct sockaddr_in& getSockAddrInet() const { return addr_; }
     void setSockAddrInet(const struct sockaddr_in& addr) { addr_ = addr; }
+
     uint32_t ipNetEndian() const { return addr_.sin_addr.s_addr; }
     uint16_t portNetEndian() const { return addr_.sin_port; }
 private:

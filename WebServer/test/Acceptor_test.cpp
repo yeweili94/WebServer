@@ -14,14 +14,14 @@ void newConnection(int sockfd, const InetAddress& peerAddr)
            peerAddr.toIpPort().c_str());
     int n = ::write(sockfd, "How are you?\n", 13);
     (void)n;
-    sockets::Close(sockfd);
+    // sockets::Close(sockfd);
 }
 
 int main()
 {
     printf("main(): pid = %d\n", getpid());
 
-    InetAddress listenAddr(8888);
+    InetAddress listenAddr(8099);
     EventLoop loop;
 
     Acceptor acceptor(&loop, listenAddr);

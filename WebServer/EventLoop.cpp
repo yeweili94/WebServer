@@ -89,9 +89,6 @@ void EventLoop::loop()
     {
         activeChannels_.clear();
         pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
-        {
-            printActiveChannels();
-        }
         eventHandling_ = true;
         for (ChannelList::iterator it = activeChannels_.begin();
             it != activeChannels_.end(); ++it)
@@ -194,7 +191,7 @@ void EventLoop::handleRead()
     ssize_t n = ::read(wakeupFd_, &one, sizeof one);
     if (n != sizeof one)
     {
-        // LOG << "EventLoop::handleRead() reads " << n << " bytes instead of 8";
+        LOG << "EventLoop::handleRead() reads " << n << " bytes instead of 8";
     }
 }
 
@@ -213,16 +210,6 @@ void EventLoop::doPendingFunctors()
         functors[i]();
     }
     callingPendingFunctors_ = false;
-}
-
-void EventLoop::printActiveChannels() const
-{
-    for (ChannelList::const_iterator it = activeChannels_.begin();
-        it != activeChannels_.end(); ++it)
-    {
-      // const Channel* ch = *it;
-      // LOG << "{" << ch->reventsToString() << "} ";
-    }
 }
 
 TimerId EventLoop::runAt(const Timestamp& time, const TimerCallback& cb)

@@ -19,6 +19,7 @@ ssize_t Buffer::readFd(int fd, int* savedErrno)
     //µÚ¶þ¿é»º³åÇø
     vec[1].iov_base = extrabuf;
     vec[1].iov_len = 65536;
+
     const ssize_t n = sockets::Readv(fd, vec, 2);
     if (n < 0) {
         *savedErrno = errno;

@@ -74,19 +74,29 @@ void Channel::handleEventWithGuard(Timestamp receiveTime)
     //POLLERR 发生错误
     //POLLHUP　对方描述符挂起
     //POLLNVAL 描述字不是一个打开的文件
+    //这里关于POLLHUP什么时候会触发？
+    //正常情况下如果是客户端关闭连接，则只会触发POLLIN,
+    //若是服务器端主动关闭连接，导致客户端再关闭连接，则会触发POLLIN 和 POLLHUP
     eventHandling_ = true;
+    //test POLLHUP
+    if (revents_ & POLLHUP) {
+        LOG << "XXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    }
+    if (revents_ & POLLIN) {
+        LOG << "OOOOOOOOOOOOOOOOOOOOOOOOOOO";
+    }
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN))
     {
         if (logHup_)
         {
-            // LOG << "Channel::handle_event() POLLHUP";
+            LOG << "Channel::handle_event() POLLHUP";
         }
         if (closeCallback_) closeCallback_();
     }
 
     if (revents_ & POLLNVAL)
     {
-        // LOG << "Channel::handle_event() POLLNVAL";
+        LOG << "Channel::handle_event() POLLNVAL";
     }
 
     if (revents_ & (POLLERR | POLLNVAL))

@@ -14,10 +14,9 @@ namespace ywl
 {
 namespace net
 {
-
+//////////////////////////////////////////////////////////////////////////////
 class TcpConnection;
 typedef boost::shared_ptr<TcpConnection> TcpConnectionPtr;
-
 typedef boost::function<void(const TcpConnectionPtr&)> ConnectionCallback;
 typedef boost::function<void(const TcpConnectionPtr&)> CloseCallback;
 typedef boost::function<void(const TcpConnectionPtr&)> WriteCompleteCallback;
@@ -30,7 +29,7 @@ class TcpConnection : boost::enable_shared_from_this<TcpConnection>
 public:
     TcpConnection(EventLoop* loop,
                      const std::string& name,
-                     int sockfd,
+                     int sockfd,    //Acceptor:: newConnectionCallback_(connfd, peerAddr);
                      const InetAddress& localAddr,
                      const InetAddress& peerAddr);
     ~TcpConnection();
@@ -41,7 +40,8 @@ public:
     const InetAddress& peerAddress() { return peerAddr_; }
     bool connected() const { return state_ == Connected; }
     void send(const void* message, size_t len);
-    void send(Buffer* message);
+    void send(const std::string& message);
+    // void send(Buffer* message);
     void shutdown();
     void setTcpNoDelay(bool on);
 
@@ -74,31 +74,39 @@ private:
     enum StateE {Connecting, Connected, Disconnecting, Disconnected};
 
     void setState(StateE s) { state_ = s; }
+    //设置channel的各种事件回调函数
     void handleRead(Timestamp receiveTime);
     void handleWrite();
     void handleClose();
     void handleError();
+    //发送数据
+    void sendInLoop(const std::string& message);
     void sendInLoop(const void* message, size_t len);
     void shutdownInLoop();
 
     EventLoop* loop_;
     StateE state_;
     std::string name_;
+
     boost::scoped_ptr<Socket> socket_;
     boost::scoped_ptr<Channel> channel_;
+
     InetAddress localAddr_;
     InetAddress peerAddr_;
-    ConnectionCallback connectionCallback_;
-    MessageCallback messageCallback_;
+
+    ConnectionCallback connectionCallback_; //TcpServer中设置(必须)
+    MessageCallback messageCallback_;   //TcpServer中设置(必须)
+    CloseCallback closeCallback_;   //TcpServer中设置(必须)
+
     //所有的用户数据都拷贝到内核缓冲区时调用该回调函数
     //outputBuffer被清空也会回调该函数
-    WriteCompleteCallback writeCompleteCallback_;
-    //高水位标志回调函数
-    HighWaterMarkCallback highWaterMarkCallback_;
-    CloseCallback closeCallback_;
+    WriteCompleteCallback writeCompleteCallback_;   //TcpServer中设置
+    //高水位标志回调函数,当发送数据太多缓冲区承受不了时调用此函数
+    HighWaterMarkCallback highWaterMarkCallback_;   //TcpServer中设置
     size_t highWaterMark_;  //高水位标
     Buffer inputBuffer_;
     Buffer outputBuffer_;
+
     boost::any contex_;
 };
 

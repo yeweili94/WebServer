@@ -103,7 +103,7 @@ void sockets::toIpPortString(char* buf, size_t size, const struct sockaddr_in& a
 {
     char host[INET_ADDRSTRLEN] = "INVALID";
     sockets::toIpString(host, sizeof host, addr);
-    //转化为大端主机字节序
+    //转化为主机字节序
     uint16_t port = sockets::networkToHost16(addr.sin_port);
     snprintf(buf, size, "%s:%u", host, port);
 }

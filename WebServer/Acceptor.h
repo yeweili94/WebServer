@@ -31,6 +31,7 @@ private:
     void handleRead();
 
     EventLoop* loop_;
+    //由acceptSocket_负责关闭监听描述符
     Socket acceptSocket_;
     Channel acceptChannel_;
     NewConnectionCallback NewConnectionCallback_;
