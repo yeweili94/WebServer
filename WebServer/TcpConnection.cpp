@@ -12,18 +12,19 @@ namespace ywl
 {
 namespace net
 {
-void defaultConnectionCallback(const TcpConnectionPtr& conn)
-{
-    LOG << conn->localAddress().toIpPort() << " -> "
-        << conn->peerAddress().toIpPort() << " is "
-        << (conn->connected() ? "UP" : "DOWN");
-}
 
-void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buf, Timestamp)
-{
-    std::string message = buf->retrieveAllAsString();
-    fprintf(stderr, "%s\n", message.c_str());
-}
+// void defaultConnectionCallback(const TcpConnectionPtr& conn)
+// {
+//     LOG << conn->localAddress().toIpPort() << " -> "
+//         << conn->peerAddress().toIpPort() << " is "
+//         << (conn->connected() ? "UP" : "DOWN");
+// }
+
+// void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buf, Timestamp)
+// {
+//     std::string message = buf->retrieveAllAsString();
+//     fprintf(stderr, "%s\n", message.c_str());
+// }
 
 }
 }
@@ -136,10 +137,10 @@ void TcpConnection::handleClose()
     setState(Disconnected);
     channel_->disableAll();
 
-    TcpConnectionPtr guardThis(shared_from_this());
-    // connectionCallback_(guardThis);
-    
-    closeCallback_(guardThis);
+    // TcpConnectionPtr guardThis(shared_from_this());
+
+    connectionCallback_(shared_from_this());
+    closeCallback_(shared_from_this());
 }
 
 void TcpConnection::handleError()

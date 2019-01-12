@@ -24,7 +24,7 @@ typedef boost::function<void(const TcpConnectionPtr&, size_t)> HighWaterMarkCall
 typedef boost::function<void(const TcpConnectionPtr&, Buffer*, Timestamp)> MessageCallback;
 
 /////////////////////////////////////////////////////////////////////////////
-class TcpConnection : boost::enable_shared_from_this<TcpConnection>
+class TcpConnection : public boost::enable_shared_from_this<TcpConnection>
 {
 public:
     TcpConnection(EventLoop* loop,

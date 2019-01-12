@@ -10,6 +10,9 @@ target_link_libraries(reactor_test03 libserver_net)
 add_executable(reactor_test04 Reactor_test04.cpp)
 target_link_libraries(reactor_test04 libserver_net)
 
+add_executable(reactor_test05 Reactor_test05.cpp)
+target_link_libraries(reactor_test05 libserver_net)
+
 add_executable(EventLoopThread_test EventLoopThread_test.cpp)
 target_link_libraries(EventLoopThread_test libserver_net)
 
