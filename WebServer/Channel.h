@@ -40,7 +40,7 @@ class Channel : boost::noncopyable
 
   /// Tie this channel to the owner object managed by shared_ptr,
   /// prevent the owner object being destroyed in handleEvent.
-  void tie(const boost::shared_ptr<boost::any>&);
+  void tie(const boost::shared_ptr<void>&);
 
   int fd() const { return fd_; }
   int events() const { return events_; }
@@ -57,10 +57,7 @@ class Channel : boost::noncopyable
 
   // for Poller
   int status() { return status_; }
-  void set_status(int idx) { status_ = idx; }
-
-  // for debug
-  std::string reventsToString() const;
+  void set_status(int status) { status_ = status; }
 
   void doNotLogHup() { logHup_ = false; }
 
@@ -82,7 +79,7 @@ class Channel : boost::noncopyable
   int        status_; // used by Poller.
   bool       logHup_;
 
-  boost::weak_ptr<boost::any> tie_;
+  boost::weak_ptr<void> tie_;
   bool tied_;
   bool eventHandling_;
   ReadEventCallback readCallback_;
