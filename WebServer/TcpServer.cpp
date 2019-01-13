@@ -31,12 +31,12 @@ void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buf, Timestamp)
 using namespace ywl;
 using namespace ywl::net;
 
-TcpServer::TcpServer(EventLoop* acceptLoop,
+TcpServer::TcpServer(EventLoop* mainLoop,
                      const InetAddress& listenAddr,
                      const std::string& name)
-    : acceptLoop_(acceptLoop),
-      acceptor_(new Acceptor(acceptLoop_, listenAddr)),
-      threadPool_(new EventLoopThreadPool(acceptLoop_)),
+    : mainLoop_(mainLoop),
+      acceptor_(new Acceptor(mainLoop_, listenAddr)),
+      threadPool_(new EventLoopThreadPool(mainLoop_)),
       hostPort_(listenAddr.toIpPort()),
       name_(name),
       connectionCallback_(defaultConnectionCallback),
@@ -51,7 +51,7 @@ TcpServer::TcpServer(EventLoop* acceptLoop,
 
 TcpServer::~TcpServer()
 {
-    acceptLoop_->assertInLoopThread();
+    mainLoop_->assertInLoopThread();
     LOG << "TcpServer::~TcpServer [" << name_ << "] destructing";
 
     for (ConnectionMap::iterator it(connections_.begin()); it != connections_.end(); ++it)
@@ -80,7 +80,7 @@ void TcpServer::start()
 
     if (!acceptor_->listenning())
     {
-        // acceptLoop_->runInLoop(
+        // mainLoop_->runInLoop(
             // std::bind(&Acceptor::listen, get_pointer(acceptor_)));
         acceptor_->listen();
     }
@@ -88,7 +88,7 @@ void TcpServer::start()
 
 void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 {
-    acceptLoop_->assertInLoopThread();
+    mainLoop_->assertInLoopThread();
     EventLoop* ioLoop = threadPool_->getNextLoop();
     LOG << "nextLoop is" << nextConnId_;
     char buf[32];
@@ -119,12 +119,12 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
 
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
-    acceptLoop_->runInLoop(boost::bind(&TcpServer::removeConnectionInloop, this, conn));
+    mainLoop_->runInLoop(boost::bind(&TcpServer::removeConnectionInloop, this, conn));
 }
 
 void TcpServer::removeConnectionInloop(const TcpConnectionPtr& conn)
 {
-    acceptLoop_->assertInLoopThread();
+    mainLoop_->assertInLoopThread();
     LOG << "TcpServer::removeConnectionInLoop [" << name_
         << "] - connection " << conn->name();
     size_t n = connections_.erase(conn->name());

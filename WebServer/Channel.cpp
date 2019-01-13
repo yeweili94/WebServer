@@ -30,9 +30,9 @@ Channel::~Channel()
     assert(!eventHandling_);
 }
 
-void Channel::tie(const boost::shared_ptr<void>& obj)
+void Channel::tie(const boost::shared_ptr<boost::any>& any)
 {
-    tie_ = obj;
+    tie_ = any;
     tied_ = true;
 }
 
@@ -50,7 +50,7 @@ void Channel::remove()
 
 void Channel::handleEvent(Timestamp receiveTime)
 {
-    boost::shared_ptr<void> guard;
+    boost::shared_ptr<boost::any> guard;
     if (tied_)
     {
         //延长生命周期

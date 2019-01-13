@@ -58,7 +58,7 @@ private:
 
     using ConnectionMap = std::map<std::string, TcpConnectionPtr>;
 
-    EventLoop* acceptLoop_;
+    EventLoop* mainLoop_;
     boost::scoped_ptr<Acceptor> acceptor_;
     boost::scoped_ptr<EventLoopThreadPool> threadPool_;
 
