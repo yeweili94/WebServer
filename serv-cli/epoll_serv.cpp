@@ -146,7 +146,8 @@ int main(void)
 				}
 
 				std::cout<<buf;
-				write(connfd, buf, strlen(buf));
+				size_t n = write(connfd, buf, strlen(buf));
+                (void)n;
                 shutdown(connfd, SHUT_WR);
 			}
 
