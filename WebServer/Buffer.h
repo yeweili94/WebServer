@@ -100,22 +100,6 @@ public:
         assert(end <= beginWrite());
         retrieve(end - peek());
     }
-    // void retrieveInt32()
-    // {
-    //     retrieve(sizeof(int32_t));
-    // }
-    // void retrieveInt64()
-    // {
-    //     retrieve(sizeof(int64_t));
-    // }
-    // void retrieveInt16()
-    // {
-    //     retrieve(sizeof(int16_t));
-    // }
-    // void retrieveInt8()
-    // {
-    //     retrieve(sizeof(int8_t));
-    // }
     std::string retrieveAllAsString()
     {
         return retrieveAsString(readableBytes());
@@ -146,70 +130,11 @@ public:
     {
         append(static_cast<const char*>(data), len);
     }
-    // void appendInt32(int32_t x)
-    // {
-    //     int32_t be32 = sockets::hostToNetwork32(x);
-    //     append(&be32, sizeof be32);
-    // }
-    // void appendInt16(int16_t x)
-    // {
-    //     int16_t be16 = sockets::hostToNetwork16(x);
-    //     append(&be16, sizeof be16);
-    // }
-    // void appendInt8(int8_t x)
-    // {
-    //     append(&x, sizeof x);
-    // }
-    void hasWritten(size_t len)
+        void hasWritten(size_t len)
     {
         writerIndex_ += len;
     }
-    //peek intxx_t from network endian
-    //convert to host endian
-    //readerIndex_ not changed
-    // int32_t peekInt32() const
-    // {
-    //     assert(readableBytes() >= sizeof int32_t);
-    //     int32_t be32 = 0;
-    //     ::memcpy(&be32, peek(), sizeof be32);
-    //     return sockets::networkToHost32(be32);
-    // }
-    // int16_t peekInt16() const
-    // {
-    //     assert(readableBytes() >= sizeof int16_t);
-    //     int16_t be16 = 0;
-    //     ::memcpy(&be16, peek(), sizeof be16);
-    //     return sockets::networkToHost32(be16);
-    // }
-    // int8_t peekInt8() const
-    // {
-    //     assert(readableBytes() >= sizeof int8_t);
-    //     int16_t be8 = 0;
-    //     ::memcpy(&be8, peek(), sizeof be8);
-    //     return sockets::networkToHost32(be8);
-    // }
-    //read int32_t from network endian
-    //convert to host endian
-    //readerIndex_ changed
-    // int32_t readInt32()
-    // {
-    //     int32_t ret = peekInt32();
-    //     retrieveInt32();
-    //     return ret;
-    // }
-    // int16_t readInt16()
-    // {
-    //     int16_t ret = peekInt16();
-    //     retrieveInt16();
-    //     return ret;
-    // }
-    // int8_t readInt8()
-    // {
-    //     int8_t ret = peekInt8();
-    //     retrieveInt8();
-    //     return ret;
-    // }
-    //prepend intxx in network endian
+        //prepend intxx in network endian
     void prepend(const void* data, size_t len)
     {
         assert(len <= prependableBytes());
@@ -217,20 +142,6 @@ public:
         const char* d = static_cast<const char*>(data);
         std::copy(d, d+len, begin()+readerIndex_);
     }
-    // void prependInt32(int32_t x)
-    // {
-    //     int32_t be32 = sockets::hostToNetwork32(x);
-    //     prepend(&be32, sizeof be32);
-    // }
-    // void prependInt16(int16_t x)
-    // {
-    //     int16_t be16 = sockets::hostToNetwork16(x);
-    //     prepend(&be16, sizeof be16);
-    // }
-    // void prependInt8(int8_t x)
-    // {
-    //     prepend(&x, sizeof x);
-    // }
     void shrink(size_t reserve)
     {
         Buffer other;

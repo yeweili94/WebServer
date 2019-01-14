@@ -25,7 +25,6 @@ namespace
 {
 const int kNew = -1;
 const int kAdded = 1;
-const int kDeleted = 2;
 }
 
 EPollPoller::EPollPoller(EventLoop* loop)
@@ -78,12 +77,6 @@ void EPollPoller::fillActiveChannels(int numEvents,
     for (int i = 0; i < numEvents; ++i)
     {
         Channel* channel = static_cast<Channel*>(events_[i].data.ptr);
-#ifdef DEBUG
-        int fd = channel->fd();
-        ChannelMap::const_iterator it = channels_.find(fd);
-        assert(it != channels_.end());
-        assert(it->second == channel);
-#endif
         channel->set_revents(events_[i].events);
         activeChannels->push_back(channel);
   }
@@ -94,37 +87,16 @@ void EPollPoller::updateChannel(Channel* channel)
     Poller::assertInLoopThread();
     LOG << "fd = " << channel->fd() << " events = " << channel->events();
     const int status = channel->status();
-    if (status == kNew || status == kDeleted)
+    if (status == kNew)
     {
-        // a new one, add with EPOLL_CTL_ADD
-        int fd = channel->fd();
-        if (status == kNew)
-        {
-            assert(channels_.find(fd) == channels_.end());
-            channels_[fd] = channel;
-        }
-        else // status == kDeleted
-        {
-            assert(channels_.find(fd) != channels_.end());
-            assert(channels_[fd] == channel);
-        }
         channel->set_status(kAdded);
         update(EPOLL_CTL_ADD, channel);
     }
     else
     {
-        // update existing one with EPOLL_CTL_MOD/DEL
-        int fd = channel->fd();
-        (void)fd;
-        assert(channels_.find(fd) != channels_.end());
-        assert(channels_[fd] == channel);
-        assert(status == kAdded);
         if (channel->isNoneEvent())
         {
-            //这里只在内核中关闭对该事件的关注
-            //并不清除map中该channel的记录
             update(EPOLL_CTL_DEL, channel);
-            channel->set_status(kDeleted);
         }
         else
         {
@@ -138,19 +110,11 @@ void EPollPoller::removeChannel(Channel* channel)
     Poller::assertInLoopThread();
     int fd = channel->fd();
     LOG << "fd = " << fd;
-    assert(channels_.find(fd) != channels_.end());
-    assert(channels_[fd] == channel);
     assert(channel->isNoneEvent());
     int status = channel->status();
-    assert(status == kAdded || status == kDeleted);
-    size_t n = channels_.erase(fd);
-    (void)n;
-    assert(n == 1);
-
-    if (status == kAdded)
-    {
-        update(EPOLL_CTL_DEL, channel);
-    }
+    assert(status == kAdded);
+    (void)status;
+    update(EPOLL_CTL_DEL, channel);
     channel->set_status(kNew);
 }
 

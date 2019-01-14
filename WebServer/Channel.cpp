@@ -19,7 +19,6 @@ Channel::Channel(EventLoop* loop, int fd)
       revents_(0),
       status_(-1),
       logHup_(true),
-      tied_(false),
       eventHandling_(false)
 {
 
@@ -28,12 +27,6 @@ Channel::Channel(EventLoop* loop, int fd)
 Channel::~Channel()
 {
     assert(!eventHandling_);
-}
-
-void Channel::tie(const boost::shared_ptr<void>& any)
-{
-    tie_ = any;
-    tied_ = true;
 }
 
 void Channel::update()
@@ -49,24 +42,6 @@ void Channel::remove()
 }
 
 void Channel::handleEvent(Timestamp receiveTime)
-{
-    boost::shared_ptr<void> guard;
-    if (tied_)
-    {
-        //延长生命周期
-        guard = tie_.lock();
-        if (guard)
-        {
-            handleEventWithGuard(receiveTime);
-        }
-    }
-    else
-    {
-        handleEventWithGuard(receiveTime);
-    }
-}
-
-void Channel::handleEventWithGuard(Timestamp receiveTime)
 {
     //POLLIN 普通可读事件
     //POLLPRI 高优先级事件(如带外数据)

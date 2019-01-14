@@ -66,7 +66,7 @@ class Channel : boost::noncopyable
 
  private:
   void update();
-  void handleEventWithGuard(Timestamp receiveTime);
+  // void handleEventWithGuard(Timestamp receiveTime);
 
   static const int kNoneEvent;
   static const int kReadEvent;
@@ -79,8 +79,8 @@ class Channel : boost::noncopyable
   int        status_; // used by Poller.
   bool       logHup_;
 
-  boost::weak_ptr<void> tie_;
-  bool tied_;
+  // boost::weak_ptr<void> tie_;
+  // bool tied_;
   bool eventHandling_;
   ReadEventCallback readCallback_;
   EventCallback writeCallback_;

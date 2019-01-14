@@ -31,6 +31,8 @@ void onMessage(const TcpConnectionPtr& conn,
            buf->readableBytes(), conn->name().c_str());
     (void)buf;
     (void)receiveTime;
+    char sendbuf[64] = "you have my words\n";
+    conn->send(sendbuf, strlen(sendbuf));
 }
 
 int main()

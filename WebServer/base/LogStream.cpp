@@ -154,3 +154,4 @@ LogStream& LogStream::operator<<(long double v)
     }
     return *this;
 }
+

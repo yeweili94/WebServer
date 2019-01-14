@@ -117,6 +117,8 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     conn->getLoop()->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));
 }
 
+//这个TcpConnection参数是用来延长TcpConnection的生命周期的
+//这个函数是在IO线程中调用的，所以应该用runInLoop加入到mainLoop线程中去调用
 void TcpServer::removeConnection(const TcpConnectionPtr& conn)
 {
     mainLoop_->runInLoop(boost::bind(&TcpServer::removeConnectionInloop, this, conn));
@@ -127,9 +129,11 @@ void TcpServer::removeConnectionInloop(const TcpConnectionPtr& conn)
     mainLoop_->assertInLoopThread();
     LOG << "TcpServer::removeConnectionInLoop [" << name_
         << "] - connection " << conn->name();
+    assert(conn.use_count() == 2);
     size_t n = connections_.erase(conn->name());
-    assert(n == 1);
-    (void)n;
+    assert(conn.use_count() == 1);
+
+    assert(n == 1); (void)n;
 
     EventLoop* ioLoop = conn->getLoop();
     ioLoop->queueInLoop(

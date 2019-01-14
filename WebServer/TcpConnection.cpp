@@ -136,10 +136,9 @@ void TcpConnection::handleClose()
     assert(state_ == Connected || state_ == Disconnecting);
     setState(Disconnected);
     channel_->disableAll();
-
-    // TcpConnectionPtr guardThis(shared_from_this());
-
+    //用户设置
     connectionCallback_(shared_from_this());
+    //TcpServer中设置
     closeCallback_(shared_from_this());
 }
 
@@ -175,94 +174,59 @@ void TcpConnection::shutdown()
     }
 }
 
-void TcpConnection::sendInLoop(const void* data, size_t len)
+void TcpConnection::send(const void* data, size_t len)
 {
     loop_->assertInLoopThread();
-    ssize_t nwrote = 0;
-    size_t nleft = len;
-    bool error = false;
     if (state_ == Disconnected)
     {
-        LOG << "WARN: disconnected, give up writting";
+        LOG << "disconnected, give up left writing";
         return;
     }
+    ssize_t nwrote = 0;
+    ssize_t nleft = len;
+    bool error = false;
+
+    // write directly, if there is nothing in outputBuffer and channel_ has concerned nothing
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
     {
         nwrote = sockets::Write(channel_->fd(), data, len);
-        if (nwrote >= 0) {
-            nleft = len - nwrote;
-            if (nleft ==0 && writeCompleteCallback_)
-            {
-                loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-            }
-        }
-        else
+        if (nwrote < 0)
         {
             nwrote = 0;
             if (errno != EWOULDBLOCK)
             {
-                LOG << "SYSERR: Tcpconnection::sendInLoop";
-                if (errno  == EPIPE)
+                if (errno == EPIPE)
                 {
                     error = true;
                 }
             }
         }
+        else
+        {
+            nleft = len - nwrote;
+            if (nleft == 0 && writeCompleteCallback_)
+            {
+                loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
+                return;
+            }
+        }
     }
-    assert(nleft <= len);
-    if (!error && nleft)
-    {
+
+    assert(nwrote <= len);
+    if (!error && nleft > 0) {
         size_t oldLen = outputBuffer_.readableBytes();
-        if (oldLen + oldLen >= highWaterMark_
+        channel_->enableWriting();
+        if (oldLen + nleft >= highWaterMark_
             && oldLen < highWaterMark_
             && highWaterMarkCallback_)
         {
-            loop_->queueInLoop(boost::bind(highWaterMarkCallback_, shared_from_this(), oldLen + nleft));
+            loop_->runInLoop(boost::bind(highWaterMarkCallback_, shared_from_this(), oldLen + nleft));
         }
         outputBuffer_.append(static_cast<const char*>(data)+nwrote, nleft);
-        if (!channel_->isWriting())
-        {
-            channel_->enableWriting();
-        }
+        channel_->enableWriting();
     }
 }
 
-void TcpConnection::sendInLoop(const std::string& message)
-{
-    sendInLoop(message.c_str(), message.size());
-}
-
-void TcpConnection::send(const void* data, size_t len)
-{
-    if (state_ == Connected)
-    {
-        if (loop_->isInLoopThread())
-        {
-            sendInLoop(data, len);
-        }//若是其他线程调用的则把message拷贝一份
-        else
-        {
-            std::string message(static_cast<const char*>(data), len);
-            loop_->runInLoop(
-                boost::bind(&TcpConnection::sendInLoop, this, message));
-        }
-    }
-}
-
-void TcpConnection::send(const std::string& message)
-{
-    if (state_ == Connected)
-    {
-        if (loop_->isInLoopThread())
-        {
-            sendInLoop(message);
-        }
-        else
-        {
-            loop_->runInLoop(boost::bind(&TcpConnection::sendInLoop, this, message));
-        }
-    }
-}
 
 void TcpConnection::setTcpNoDelay(bool on)
 {
@@ -275,7 +239,6 @@ void TcpConnection::connectEstablished()
     assert(state_ == Connecting);
     setState(Connected);
 
-    channel_->tie(shared_from_this());
     channel_->enableReading();
     connectionCallback_(shared_from_this());
 }

@@ -39,9 +39,8 @@ public:
     const InetAddress& localAddress() { return localAddr_; }
     const InetAddress& peerAddress() { return peerAddr_; }
     bool connected() const { return state_ == Connected; }
+    //send data to peer client
     void send(const void* message, size_t len);
-    void send(const std::string& message);
-    // void send(Buffer* message);
     void shutdown();
     void setTcpNoDelay(bool on);
 
@@ -80,8 +79,6 @@ private:
     void handleClose();
     void handleError();
     //发送数据
-    void sendInLoop(const std::string& message);
-    void sendInLoop(const void* message, size_t len);
     void shutdownInLoop();
 
     EventLoop* loop_;
@@ -104,6 +101,7 @@ private:
     //高水位标志回调函数,当发送数据太多缓冲区承受不了时调用此函数
     HighWaterMarkCallback highWaterMarkCallback_;   //TcpServer中设置
     size_t highWaterMark_;  //高水位标
+
     Buffer inputBuffer_;
     Buffer outputBuffer_;
 

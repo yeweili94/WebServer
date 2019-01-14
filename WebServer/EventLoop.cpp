@@ -19,7 +19,7 @@ namespace
 // 线程局部存储
 __thread EventLoop* t_loopInThisThread = 0;
 
-const int kPollTimeMs = 5000;
+const int kPollTimeMs = 20000;
 
 int createEventfd()
 {
