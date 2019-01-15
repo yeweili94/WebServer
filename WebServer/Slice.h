@@ -16,7 +16,7 @@ namespace ywl
 
 // copy from leveldb project
 // @see https://github.com/google/leveldb/blob/master/include/leveldb/slice.h
-// Slice类不拥有资源，再包裹的资源析构之前使用
+// Slice类不拥有资源，在包裹的资源析构之前使用
 class Slice
 {
 public:
