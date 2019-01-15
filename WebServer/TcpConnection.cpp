@@ -167,25 +167,25 @@ void TcpConnection::send(const void* data, size_t len)
     bool error = false;
 
     // write directly, if there is nothing in outputBuffer and channel_ has concerned nothing
-    if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
-    {
-        nwrote = sockets::Write(channel_->fd(), data, len);
-        if (nwrote < 0) {
-            nwrote = 0;
-            if (errno != EWOULDBLOCK) {
-                if (errno == EPIPE) {
-                    error = true;
-                }
-            }
-        } else {
-            nleft = len - nwrote;
-            if (nleft == 0 && writeCompleteCallback_)
-            {
-                loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-                return;
-            }
-        }
-    }
+    // if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
+    // {
+    //     nwrote = sockets::Write(channel_->fd(), data, len);
+    //     if (nwrote < 0) {
+    //         nwrote = 0;
+    //         if (errno != EWOULDBLOCK) {
+    //             if (errno == EPIPE) {
+    //                 error = true;
+    //             }
+    //         }
+    //     } else {
+    //         nleft = len - nwrote;
+    //         if (nleft == 0 && writeCompleteCallback_)
+    //         {
+    //             loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
+    //             return;
+    //         }
+    //     }
+    // }
 
     assert(nwrote <= len);
     if (!error && nleft > 0) {

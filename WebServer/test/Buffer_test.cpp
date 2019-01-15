@@ -1,6 +1,8 @@
 #include <WebServer/Buffer.h>
 #include <unistd.h>
 #include <string>
+#include <iostream>
+using namespace std;
 
 using namespace ywl;
 using namespace ywl::net;
@@ -28,6 +30,7 @@ int main()
     Buffer buffer;
     testBufferRead(buffer);
     testAppend(buffer, 200);
+    std::cout << buffer.nextAllString() << std::endl;
     sleep(1);
     printf("done!!!!\n");
     testAppend(buffer, 20000);

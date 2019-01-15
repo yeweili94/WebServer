@@ -1,5 +1,6 @@
 #pragma once
 #include <WebServer/Util.h>
+#include <WebServer/Slice.h>
 
 #include <boost/noncopyable.hpp>
 
@@ -17,10 +18,11 @@ public:
     static const size_t KInitialSize = 1024;
     static const size_t ReservedPrependSize = 8;
 
-    Buffer() : readerIndex_(ReservedPrependSize),
-               writerIndex_(ReservedPrependSize),
-               capacity_(KInitialSize + ReservedPrependSize),
-               reserved_prepend_size_(ReservedPrependSize)
+    Buffer(int iniatiasize = KInitialSize, int reserveSize = ReservedPrependSize)
+        : readerIndex_(reserveSize),
+          writerIndex_(reserveSize),
+          capacity_(reserveSize + iniatiasize),
+          reserved_prepend_size_(reserveSize)
     {
         buffer_ = new char[capacity_];
         assert(length() == 0);
@@ -35,12 +37,12 @@ public:
         buffer_ = nullptr;
     }
 public:
-    size_t length()
+    size_t length() const
     {
         assert(writerIndex_ >= readerIndex_);
         return readableBytes();
     }
-    size_t size()
+    size_t size() const
     {
         return length();
     }
@@ -65,7 +67,7 @@ public:
         assert(writerIndex_ <= capacity_);
         return capacity_ - writerIndex_;
     }
-    size_t readableBytes()
+    size_t readableBytes() const
     {
         assert(writerIndex_ >= readerIndex_);
         return writerIndex_ - readerIndex_;
@@ -171,6 +173,9 @@ public:
     {
         append(&x, sizeof x);
     }
+    void append(const Slice& slice) {
+        append(slice.data(), slice.size());
+    }
     void prepend(const void* data, size_t len)
     {
         assert(len <= readerIndex_);
@@ -231,8 +236,45 @@ public: //readIntxx
         retrieve(sizeof result);
         return result;
     }
+    Slice toSlice() const {
+        return Slice(data(), length());
+    }
+    std::string toString() const {
+        return std::string(data(), length());
+    }
+    void shrink(size_t reserve) {
+        Buffer other(length() + reserve);
+        other.append(toSlice());
+        swap(other);
+    }
     //read data from sockfd
     ssize_t readFd(int sockfd, int *savedErrno);
+
+    Slice Next(size_t len) {
+        if (len < length()) {
+            Slice result(data(), len);
+            readerIndex_ += len;
+            return result;
+        }
+        return nextAll();
+    }
+
+    Slice nextAll() {
+        Slice result(data(), length());
+        reset();
+        return result;
+    }
+
+    std::string nextString(size_t len) {
+        Slice result = Next(len);
+        return std::string(result.data(), result.size());
+    }
+
+    std::string nextAllString() {
+        Slice s = nextAll();
+        return std::string(s.data(), s.size());
+    }
+
 private:
     char* begin()
     {
