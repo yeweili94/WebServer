@@ -38,10 +38,6 @@ class Channel : boost::noncopyable
   void setErrorCallback(const EventCallback& cb)
   { errorCallback_ = cb; }
 
-  /// Tie this channel to the owner object managed by shared_ptr,
-  /// prevent the owner object being destroyed in handleEvent.
-  void tie(const boost::shared_ptr<void>&);
-
   int fd() const { return fd_; }
   int events() const { return events_; }
   void set_revents(int revt) { revents_ = revt; } // used by pollers

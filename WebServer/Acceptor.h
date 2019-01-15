@@ -2,7 +2,6 @@
 #define WEBSERVER_ACCEPTOR_H
 
 #include <WebServer/Channel.h>
-#include <WebServer/Socket.h>
 
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>

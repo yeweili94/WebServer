@@ -3,7 +3,6 @@
 #include <WebServer/Util.h>
 #include <netinet/in.h>
 #include <WebServer/InetAddress.h>
-#include <WebServer/Socket.h>
 
 #include <boost/bind.hpp>
 

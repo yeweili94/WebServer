@@ -9,19 +9,19 @@ using namespace ywl;
 using namespace ywl::net;
 
 const int Channel::kNoneEvent = 0;
-const int Channel::kReadEvent = POLLIN | POLLPRI;
-const int Channel::kWriteEvent = POLLOUT;
+const int Channel::kReadEvent = EPOLLIN | EPOLLPRI;
+const int Channel::kWriteEvent = EPOLLOUT;
 
 Channel::Channel(EventLoop* loop, int fd)
     : loop_(loop),
       fd_(fd),
       events_(0),
       revents_(0),
-      status_(-1),
+      status_(-1),  //KNew
       logHup_(true),
       eventHandling_(false)
 {
-
+    assert(status_ == -1);
 }
 
 Channel::~Channel()
@@ -54,12 +54,12 @@ void Channel::handleEvent(Timestamp receiveTime)
     //若是服务器端主动关闭连接，导致客户端再关闭连接，则会触发POLLIN 和 POLLHUP
     eventHandling_ = true;
     //test POLLHUP
-    if (revents_ & POLLHUP) {
-        LOG << "XXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    }
-    if (revents_ & POLLIN) {
-        LOG << "OOOOOOOOOOOOOOOOOOOOOOOOOOO";
-    }
+    // if (revents_ & POLLHUP) {
+    //     LOG << "XXXXXXXXXXXXXXXXXXXXXXXXXXX";
+    // }
+    // if (revents_ & POLLIN) {
+    //     LOG << "OOOOOOOOOOOOOOOOOOOOOOOOOOO";
+    // }
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN))
     {
         if (logHup_)

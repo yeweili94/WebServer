@@ -1,13 +1,15 @@
 #include <WebServer/EventLoop.h>
 #include <WebServer/Channel.h>
-#include <WebServer/Poller.h>
-#include <WebServer/EPollPoller.h>
+// #include <WebServer/Poller.h>
+// #include <WebServer/EPollPoller.h>
 #include <WebServer/base/Logging.h>
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
+#include <boost/implicit_cast.hpp>
 
 #include <poll.h>
+#include <sys/epoll.h>
 #include <sys/eventfd.h>
 
 using namespace ywl;
@@ -18,6 +20,10 @@ namespace
 // 当前线程EventLoop对象指针
 // 线程局部存储
 __thread EventLoop* t_loopInThisThread = 0;
+
+const int KNew = -1;
+const int KAdded = 1;
+const int KDeleted = 2;
 
 const int kPollTimeMs = 20000;
 
@@ -45,12 +51,17 @@ EventLoop::EventLoop()
     eventHandling_(false),
     callingPendingFunctors_(false),
     threadId_(CurrentThread::tid()),
-    poller_(new EPollPoller(this)),
+    epollfd_(epoll_create1(EPOLL_CLOEXEC)),
+    epollEvents_(16),
     timerQueue_(new TimerManager(this)),
     wakeupFd_(createEventfd()),
     wakeupChannel_(new Channel(this, wakeupFd_)),
     currentActiveChannel_(NULL)
 {
+    if (epollfd_ < 0) 
+    {
+        FATAL << "epoll_create() failed!";
+    }
     LOG << "EventLoop created " << this << " in thread " << threadId_;
     // 如果当前线程已经创建了EventLoop对象，终止(LOG_FATAL)
     if (t_loopInThisThread)
@@ -71,6 +82,7 @@ EventLoop::EventLoop()
 EventLoop::~EventLoop()
 {
     ::close(wakeupFd_);
+    ::close(epollfd_);
     t_loopInThisThread = NULL;
 }
 
@@ -88,9 +100,9 @@ void EventLoop::loop()
     while (!quit_)
     {
         activeChannels_.clear();
-        pollReturnTime_ = poller_->poll(kPollTimeMs, &activeChannels_);
+        pollReturnTime_ = poll(kPollTimeMs);
         eventHandling_ = true;
-        for (ChannelList::iterator it = activeChannels_.begin();
+        for (auto it = activeChannels_.begin();
             it != activeChannels_.end(); ++it)
         {
             currentActiveChannel_ = *it;
@@ -150,7 +162,7 @@ void EventLoop::updateChannel(Channel* channel)
 {
     assert(channel->ownerLoop() == this);
     assertInLoopThread();
-    poller_->updateChannel(channel);
+    epollUpdateChannel(channel);
 }
 
 void EventLoop::removeChannel(Channel* channel)
@@ -159,10 +171,11 @@ void EventLoop::removeChannel(Channel* channel)
     assertInLoopThread();
     if (eventHandling_)
     {
-        assert(currentActiveChannel_ == channel ||
-            std::find(activeChannels_.begin(), activeChannels_.end(), channel) == activeChannels_.end());
+        assert(currentActiveChannel_ == channel ||  \
+                 std::find(activeChannels_.begin(), \
+                 activeChannels_.end(), channel) == activeChannels_.end());
     }
-    poller_->removeChannel(channel);
+    epollRemoveChannel(channel);
 }
 
 void EventLoop::abortNotInLoopThread()
@@ -232,5 +245,106 @@ TimerId EventLoop::runEvery(double interval, const TimerCallback& cb)
 void EventLoop::cancel(TimerId timerId)
 {
 	return timerQueue_->cancel(timerId);
+}
+
+Timestamp EventLoop::poll(int timeoutMs)
+{
+    int numEvents = ::epoll_wait(epollfd_, &*epollEvents_.begin(),
+                                 static_cast<int>(epollEvents_.size()),
+                                 timeoutMs);
+    Timestamp now(Timestamp::now());
+    if (numEvents > 0)
+    {
+        LOG << numEvents << " events happend";
+        fillActiveChannels(numEvents);
+        if (boost::implicit_cast<size_t>(numEvents) == epollEvents_.size())
+        {
+            epollEvents_.resize(epollEvents_.size()*2);
+        }
+    }
+    else if (numEvents == 0)
+    {
+        LOG << "nothing happend";
+    }
+    else
+    {
+        LOG << "EPollPoller::poll()";
+    }
+    return now;
+}
+
+void EventLoop::fillActiveChannels(int numEvents)
+{
+    assert(implicit_cast<size_t>(numEvents) <= events_.size());
+    for (int i = 0; i < numEvents; i++)
+    {
+        Channel* channel = static_cast<Channel*>(epollEvents_[i].data.ptr);
+        channel->set_revents(epollEvents_[i].events);
+        activeChannels_.push_back(channel);
+    }
+}
+
+void EventLoop::epollUpdateChannel(Channel* channel)
+{
+    assertInLoopThread();
+    LOG << "fd = " << channel->fd() << "events = " << channel->events();
+    const int status = channel->status();
+    if (status == KNew)
+    {
+        channel->setStatus(KAdded);
+        epollUpdate(EPOLL_CTL_ADD, channel);
+    }
+    else
+    {
+        if (channel->isNoneEvent())
+        {
+            epollUpdate(EPOLL_CTL_DEL, channel);
+            channel->setStatus(KDeleted);
+        }
+        else
+        {
+            epollUpdate(EPOLL_CTL_MOD, channel);
+        }
+    }
+}
+
+void EventLoop::epollUpdate(int ope, Channel* channel)
+{
+    struct epoll_event ev;
+    bzero(&ev, sizeof ev);
+    ev.data.ptr = channel;
+    ev.events = channel->events();
+    int fd = channel->fd();
+
+    int ret = ::epoll_ctl(epollfd_, ope, fd, &ev);
+    if (ret < 0)
+    {
+        fprintf(stderr, "epoll_ctl wrong, code:%d\n", errno);
+        if (ope == EPOLL_CTL_DEL)
+        {
+            LOG << "epoll_ctl ope = " << ope << " fd = " << fd;
+        }
+        else
+        {
+            FATAL << "epoll_ctl ope = " << ope << " fd = " << fd;
+        }
+    }
+}
+
+void EventLoop::epollRemoveChannel(Channel* channel)
+{
+    assertInLoopThread();
+    int fd = channel->fd();
+    LOG << "fd = " << fd;
+    assert(channel->isNoneEvent());
+    int status = channel->status();
+    assert(status == KAdded);
+    (void)status;
+
+    if (channel->status() == KAdded)
+    {
+        epollUpdate(EPOLL_CTL_DEL, channel);
+    }
+    channel->setStatus(KNew);
 }
 
