@@ -1,6 +1,7 @@
 #include <WebServer/EventLoop.h>
 #include <WebServer/Acceptor.h>
 #include <WebServer/Util.h>
+#include <netinet/in.h>
 #include <WebServer/InetAddress.h>
 #include <WebServer/Socket.h>
 
@@ -14,14 +15,14 @@ using namespace ywl::net;
 
 Acceptor::Acceptor(EventLoop* loop, const InetAddress& listenAddr)
     : loop_(loop),
-      acceptSocket_(sockets::createNonBlockSocketfd()),
-      acceptChannel_(loop, acceptSocket_.fd()),
+      acceptFd_(sockets::createNonBlockSocketfd()),
+      acceptChannel_(loop, acceptFd_),
       listenning_(false),
       idleFd_(::open("/dev/null", O_RDONLY | O_CLOEXEC))
 {
     assert(idleFd_ >= 0);
-    acceptSocket_.setReuseAddr(true);
-    acceptSocket_.bindAddress(listenAddr);
+    sockets::SetReuseAddr(acceptFd_, true);
+    sockets::Bind(acceptFd_, listenAddr.getSockAddrInet());
     acceptChannel_.setReadCallback(
         boost::bind(&Acceptor::handleRead, this));
 }
@@ -37,7 +38,7 @@ void Acceptor::listen()
 {
     loop_->assertInLoopThread();
     listenning_ = true;
-    acceptSocket_.listen();
+    sockets::Listen(acceptFd_);
     acceptChannel_.enableReading();
 }
 
@@ -45,7 +46,11 @@ void Acceptor::handleRead()
 {
     loop_->assertInLoopThread();
     InetAddress peerAddr(0);
-    int connfd = acceptSocket_.accept(&peerAddr);
+    struct sockaddr_in addr;
+    bzero(&addr, sizeof addr);
+    int connfd = sockets::Accept(acceptFd_, &addr);
+    peerAddr.setSockAddrInet(addr);
+
     if (connfd >= 0)
     {
         if (NewConnectionCallback_)
@@ -62,7 +67,7 @@ void Acceptor::handleRead()
         if (errno == EMFILE)
         {
             ::close(idleFd_);
-            idleFd_ = ::accept(acceptSocket_.fd(), NULL, NULL);
+            idleFd_ = ::accept(acceptFd_, NULL, NULL);
             ::close(idleFd_);
             idleFd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
         }

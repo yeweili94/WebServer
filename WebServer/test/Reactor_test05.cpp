@@ -33,6 +33,7 @@ void onMessage(const TcpConnectionPtr& conn,
     (void)receiveTime;
     char sendbuf[64] = "you have my words\n";
     conn->send(sendbuf, strlen(sendbuf));
+    // conn->shutdown();
 }
 
 int main()

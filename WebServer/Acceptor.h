@@ -32,7 +32,7 @@ private:
 
     EventLoop* loop_;
     //由acceptSocket_负责关闭监听描述符
-    Socket acceptSocket_;
+    int acceptFd_;
     Channel acceptChannel_;
     NewConnectionCallback NewConnectionCallback_;
     bool listenning_;

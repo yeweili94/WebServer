@@ -93,6 +93,7 @@ private:
     //TimerList按到期时间排序，ActiveTimerSet按Timer对象地址排序
     typedef std::pair<Timestamp, Timer*> Entry;
     typedef std::pair<Timer*, int64_t> ActiveTimer;
+
     typedef std::set<Entry> TimerList;
     typedef std::set<ActiveTimer> ActiveTimerSet;
 

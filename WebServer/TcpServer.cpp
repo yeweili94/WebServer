@@ -1,7 +1,6 @@
 #include <WebServer/TcpServer.h>
 #include <WebServer/TcpConnection.h>
 #include <WebServer/Acceptor.h>
-#include <WebServer/Socket.h>
 #include <WebServer/EventLoop.h>
 #include <WebServer/base/Logging.h>
 

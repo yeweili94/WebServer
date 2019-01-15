@@ -154,6 +154,7 @@ private:
     void enlargeSpace(size_t len)
     {
         assert(writeableBytes() < len);
+        //²»°üº¬Òþ²Ø¿Õ¼ä
         if (writeableBytes() + prependableBytes() - KCheapPrepend < len)
         {
             buffer_.resize(writerIndex_ + len);

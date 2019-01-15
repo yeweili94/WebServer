@@ -89,7 +89,7 @@ void EPollPoller::updateChannel(Channel* channel)
     const int status = channel->status();
     if (status == kNew)
     {
-        channel->set_status(kAdded);
+        channel->setStatus(kAdded);
         update(EPOLL_CTL_ADD, channel);
     }
     else
@@ -115,7 +115,7 @@ void EPollPoller::removeChannel(Channel* channel)
     assert(status == kAdded);
     (void)status;
     update(EPOLL_CTL_DEL, channel);
-    channel->set_status(kNew);
+    channel->setStatus(kNew);
 }
 
 void EPollPoller::update(int operation, Channel* channel)

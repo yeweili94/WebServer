@@ -3,6 +3,7 @@
 
 #include <fcntl.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 
 typedef struct sockaddr SA;
 using namespace ywl;
@@ -77,14 +78,12 @@ ssize_t sockets::Readv(int sockfd, const struct iovec *iov, int iovcnt)
 {
     return ::readv(sockfd, iov, iovcnt);
 }
-
 void sockets::Close(int sockfd)
 {
     if (::close(sockfd) < 0) {
         LOG << "SYSERR-sockets::Close()";
     }
 }
-
 void sockets::ShutdownWrite(int sockfd)
 {
     if (::shutdown(sockfd, SHUT_WR) < 0)
@@ -92,7 +91,22 @@ void sockets::ShutdownWrite(int sockfd)
         LOG << "SYSERR-sockets::ShutdownWrite()";
     }
 }
-
+void sockets::SetTcpNoDelay(int sockfd, bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof optval);
+}
+void sockets::SetKeepAlive(int sockfd, bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof optval);
+}
+void sockets::SetReuseAddr(int sockfd, bool on)
+{
+    int optval = on ? 1 : 0;
+    ::setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
+}
+///////////////////////////////////////////////////////////////////////////////////////////
 void sockets::toIpString(char* buf, size_t size, const struct sockaddr_in& addr)
 {
     assert(size >= INET_ADDRSTRLEN);

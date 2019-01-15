@@ -7,7 +7,7 @@ set(net_SRCS
     EventLoopThread.cpp
     Util.cpp
     Buffer.cpp
-    Socket.cpp
+    # Socket.cpp
     InetAddress.cpp
     Acceptor.cpp
     TcpConnection.cpp
@@ -28,7 +28,7 @@ set(HEADERS
     TimerId.h
     Util.h
     Buffer.h
-    Socket.h
+    # Socket.h
     InetAddress.h
     Acceptor.h
     TcpConnection.h

@@ -2,7 +2,6 @@
 #define WEBSERVER_TCPCONNECTION_H
 
 #include <WebServer/Channel.h>
-#include <WebServer/Socket.h>
 #include <WebServer/InetAddress.h>
 #include <WebServer/EventLoop.h>
 #include <WebServer/Buffer.h>
@@ -85,7 +84,8 @@ private:
     StateE state_;
     std::string name_;
 
-    boost::scoped_ptr<Socket> socket_;
+    // boost::scoped_ptr<Socket> socket_;
+    int sockfd_;
     boost::scoped_ptr<Channel> channel_;
 
     InetAddress localAddr_;

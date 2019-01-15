@@ -8,27 +8,6 @@
 #include <errno.h>
 #include <stdio.h>
 
-namespace ywl
-{
-namespace net
-{
-
-// void defaultConnectionCallback(const TcpConnectionPtr& conn)
-// {
-//     LOG << conn->localAddress().toIpPort() << " -> "
-//         << conn->peerAddress().toIpPort() << " is "
-//         << (conn->connected() ? "UP" : "DOWN");
-// }
-
-// void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buf, Timestamp)
-// {
-//     std::string message = buf->retrieveAllAsString();
-//     fprintf(stderr, "%s\n", message.c_str());
-// }
-
-}
-}
-
 using namespace ywl;
 using namespace ywl::net;
 
@@ -41,7 +20,7 @@ TcpConnection::TcpConnection(EventLoop* loop,
     : loop_(loop),
       state_(Connecting),
       name_(name),
-      socket_(new Socket(sockfd)),
+      sockfd_(sockfd),
       channel_(new Channel(loop, sockfd)),
       localAddr_(localAddr),
       peerAddr_(peerAddr),
@@ -60,14 +39,15 @@ TcpConnection::TcpConnection(EventLoop* loop,
     channel_->setErrorCallback(
         boost::bind(&TcpConnection::handleError, this));
     LOG << "TcpConnection::ctor[" << name_ << "] at " << this
-        << " fd=" << sockfd;
-    socket_->setKeepAlive(true);
+        << " fd = " << sockfd;
+    sockets::SetKeepAlive(sockfd_, true);
 }
 
 TcpConnection::~TcpConnection()
 {
+    ::sockets::Close(sockfd_);
     LOG << "TcpConnection::dtor[" << name_ << "] at " << this
-        << " fd=" << channel_->fd();
+        << " fd = " << channel_->fd();
 }
 
 void TcpConnection::handleRead(Timestamp receiveTime)
@@ -92,50 +72,46 @@ void TcpConnection::handleRead(Timestamp receiveTime)
 void TcpConnection::handleWrite()
 {
     loop_->assertInLoopThread();
-    if (channel_->isWriting())
+    if (!channel_->isWriting()) {
+        LOG << "Connection fd = " << channel_->fd();
+        return;
+    }
+    ssize_t n = sockets::Write(channel_->fd(),
+                               outputBuffer_.peek(),
+                               outputBuffer_.readableBytes());
+    if (n > 0)
     {
-        ssize_t n = sockets::Write(channel_->fd(),
-                                   outputBuffer_.peek(),
-                                   outputBuffer_.readableBytes());
-        if (n > 0)
+        outputBuffer_.retrieve(n);
+        if (outputBuffer_.readableBytes() == 0)
         {
-            outputBuffer_.retrieve(n);
-            if (outputBuffer_.readableBytes() == 0)
-            {
-                channel_->disableWriting(); //停止关注可写事件,避免出现busy loop
-                if (writeCompleteCallback_)
-                {
-                    loop_->runInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-                }
-                if (state_ == Disconnecting) //所有的数据都发送完毕，并且有人试图关闭连接，则可以关闭连接
-                {                            //这个是shutdownInLoop是因为在shutdown()函数中有可能关闭不成功
-                    shutdownInLoop();        //需要在发送缓冲区发送完毕时再做一次判断
-                }
+            channel_->disableWriting(); //停止关注可写事件,避免出现busy loop
+            if (writeCompleteCallback_) {
+                loop_->runInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
             }
-            else
-            {
-                LOG << "data has not been write complete";
+            if (state_ == Disconnecting) {//所有的数据都发送完毕，并且有人试图关闭连接，则可以关闭连接
+                                        //这个是shutdownInLoop是因为在shutdown()函数中有可能关闭不成功
+                shutdownInLoop();        //需要在发送缓冲区发送完毕时再做一次判断
             }
-        }
-        else
-        {
-            LOG << "TcpConnection::handleWrite()";
+        } else {
+            LOG << "data has not been write complete";
         }
     }
     else
     {
-        LOG << "Connection fd = " << channel_->fd()
-            << " is down, can not writting";
+        LOG << "TcpConnection::handleWrite()";
     }
 }
+    
 
 void TcpConnection::handleClose()
 {
     loop_->assertInLoopThread();
-    LOG << "fd= " << channel_->fd() << " state= " << state_;
+    LOG << "fd = " << channel_->fd() << " state = " << state_;
     assert(state_ == Connected || state_ == Disconnecting);
+
     setState(Disconnected);
     channel_->disableAll();
+
     //用户设置
     connectionCallback_(shared_from_this());
     //TcpServer中设置
@@ -149,6 +125,7 @@ void TcpConnection::handleError()
         << "] -SO_ERROR = " << err;
 }
 
+
 //当应用层想要关闭连接，不能直接调用handleclose
 //因为有可能outputBuffer中的数据还没有发送完
 //也就是说conn->send()只要网络没有故障就应该保证完整的发送所有消息
@@ -160,10 +137,13 @@ void TcpConnection::shutdownInLoop()
     //此时判断的依据是tcpconnection的状态,是否为Disconnecting
     if (!channel_->isWriting())
     {
-        socket_->shutdownWrite();
+        sockets::ShutdownWrite(sockfd_);
     }
 }
 
+//注意，用户调用shutdown函数，只会触发server->client的第一个FIN
+//client回复对应的LASTACK后，server会触发handleread, handleclose
+//继而会应发TcpServer的removeConnection,
 void TcpConnection::shutdown()
 {
     if (state_ == Connected)
@@ -190,19 +170,14 @@ void TcpConnection::send(const void* data, size_t len)
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
     {
         nwrote = sockets::Write(channel_->fd(), data, len);
-        if (nwrote < 0)
-        {
+        if (nwrote < 0) {
             nwrote = 0;
-            if (errno != EWOULDBLOCK)
-            {
-                if (errno == EPIPE)
-                {
+            if (errno != EWOULDBLOCK) {
+                if (errno == EPIPE) {
                     error = true;
                 }
             }
-        }
-        else
-        {
+        } else {
             nleft = len - nwrote;
             if (nleft == 0 && writeCompleteCallback_)
             {
@@ -230,7 +205,7 @@ void TcpConnection::send(const void* data, size_t len)
 
 void TcpConnection::setTcpNoDelay(bool on)
 {
-    socket_->setTcpNoDelay(on);
+    ::sockets::SetTcpNoDelay(sockfd_, on);
 }
 
 void TcpConnection::connectEstablished()
