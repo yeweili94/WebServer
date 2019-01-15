@@ -190,7 +190,6 @@ void TcpConnection::send(const void* data, size_t len)
     assert(nwrote <= len);
     if (!error && nleft > 0) {
         size_t oldLen = outputBuffer_.readableBytes();
-        channel_->enableWriting();
         if (oldLen + nleft >= highWaterMark_
             && oldLen < highWaterMark_
             && highWaterMarkCallback_)

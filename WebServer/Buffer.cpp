@@ -13,7 +13,7 @@ ssize_t Buffer::readFd(int sockfd, int *savedErrno)
     vec[0].iov_base = begin() + writerIndex_;
     vec[0].iov_len = writable;
 
-    vec[1].iov_base = 0;
+    vec[1].iov_base = extrabuf;
     vec[1].iov_len = sizeof(extrabuf);
 
     const int iovcnt = (writable < sizeof extrabuf) ? 2 : 1;

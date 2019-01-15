@@ -297,7 +297,7 @@ private:
             delete[] buffer_;
             buffer_ = newbuf;
         } else {
-            assert(reserved_prepend_size_ < readerIndex_);
+            assert(reserved_prepend_size_ <= readerIndex_);
             size_t readable = length();
             memmove(begin() + reserved_prepend_size_, begin() + readerIndex_, readable);
             readerIndex_ = reserved_prepend_size_;
