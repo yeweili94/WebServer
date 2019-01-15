@@ -18,7 +18,6 @@ Channel::Channel(EventLoop* loop, int fd)
       events_(0),
       revents_(0),
       status_(-1),  //KNew
-      logHup_(true),
       eventHandling_(false)
 {
     assert(status_ == -1);
@@ -53,37 +52,23 @@ void Channel::handleEvent(Timestamp receiveTime)
     //正常情况下如果是客户端关闭连接，则只会触发POLLIN,
     //若是服务器端主动关闭连接，导致客户端再关闭连接，则会触发POLLIN 和 POLLHUP
     eventHandling_ = true;
-    //test POLLHUP
-    // if (revents_ & POLLHUP) {
-    //     LOG << "XXXXXXXXXXXXXXXXXXXXXXXXXXX";
-    // }
-    // if (revents_ & POLLIN) {
-    //     LOG << "OOOOOOOOOOOOOOOOOOOOOOOOOOO";
-    // }
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN))
     {
-        if (logHup_)
-        {
-            LOG << "Channel::handle_event() POLLHUP";
-        }
+        LOG << "Channel::handle_event() POLLHUP";
         if (closeCallback_) closeCallback_();
     }
-
     if (revents_ & POLLNVAL)
     {
         LOG << "Channel::handle_event() POLLNVAL";
     }
-
     if (revents_ & (POLLERR | POLLNVAL))
     {
         if (errorCallback_) errorCallback_();
     }
-
     if (revents_ & (POLLIN | POLLPRI | POLLRDHUP))
     {
         if (readCallback_) readCallback_(receiveTime);
     }
-    
     if (revents_ & POLLOUT)
     {
         if (writeCallback_) writeCallback_();

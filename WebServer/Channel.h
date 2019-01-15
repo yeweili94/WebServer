@@ -55,8 +55,6 @@ class Channel : boost::noncopyable
   int status() { return status_; }
   void setStatus(int status) { status_ = status; }
 
-  void doNotLogHup() { logHup_ = false; }
-
   EventLoop* ownerLoop() { return loop_; }
   void remove();
 
@@ -72,7 +70,6 @@ class Channel : boost::noncopyable
   int        events_;
   int        revents_;
   int        status_; // used by Poller.
-  bool       logHup_;
 
   bool eventHandling_;
   ReadEventCallback readCallback_;
