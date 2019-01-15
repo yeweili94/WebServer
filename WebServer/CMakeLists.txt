@@ -3,7 +3,7 @@ set(net_SRCS
     Channel.cpp
     EventLoop.cpp
     Timer.cpp
-    EPollPoller.cpp
+    # EPollPoller.cpp
     EventLoopThread.cpp
     Util.cpp
     Buffer.cpp
@@ -22,7 +22,7 @@ install(TARGETS libserver_net DESTINATION lib)
 set(HEADERS
     Channel.h
     EventLoop.h
-    EPollPoller.h
+    # EPollPoller.h
     Poller.h
     Timer.h
     TimerId.h

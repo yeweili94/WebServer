@@ -3,31 +3,35 @@
 using namespace ywl;
 using namespace ywl::net;
 
-const size_t Buffer::KCheapPrepend;
-const size_t Buffer::KInitialSize;
 const char Buffer::KCRLF[] = "\r\n";
 
-ssize_t Buffer::readFd(int fd, int* savedErrno)
+ssize_t Buffer::readFd(int sockfd, int *savedErrno)
 {
-    char extrabuf[65536]; //64kb
+    char extrabuf[1024*64];
     struct iovec vec[2];
     const size_t writable = writeableBytes();
-    //第一块缓冲区
     vec[0].iov_base = begin() + writerIndex_;
-    vec[0].iov_len = writeableBytes();
+    vec[0].iov_len = writable;
 
-    //第二块缓冲区
-    vec[1].iov_base = extrabuf;
-    vec[1].iov_len = 65536;
+    vec[1].iov_base = 0;
+    vec[1].iov_len = sizeof(extrabuf);
 
-    const ssize_t n = sockets::Readv(fd, vec, 2);
-    if (n < 0) {
+    const int iovcnt = (writable < sizeof extrabuf) ? 2 : 1;
+    const ssize_t n = ::readv(sockfd, vec, iovcnt);
+
+    if (n < 0)
+    {
         *savedErrno = errno;
-    } else if (boost::implicit_cast<size_t>(n) <= writable) {
+    }
+    else if (static_cast<size_t>(n) <= writable)
+    {
         writerIndex_ += n;
-    } else {
-        writerIndex_ = buffer_.size();
+    }
+    else
+    {
+        writerIndex_ = capacity_;
         append(extrabuf, n - writable);
     }
+
     return n;
 }

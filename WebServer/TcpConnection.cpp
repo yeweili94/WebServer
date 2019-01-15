@@ -77,7 +77,7 @@ void TcpConnection::handleWrite()
         return;
     }
     ssize_t n = sockets::Write(channel_->fd(),
-                               outputBuffer_.peek(),
+                               outputBuffer_.data(),
                                outputBuffer_.readableBytes());
     if (n > 0)
     {
@@ -197,7 +197,7 @@ void TcpConnection::send(const void* data, size_t len)
         {
             loop_->runInLoop(boost::bind(highWaterMarkCallback_, shared_from_this(), oldLen + nleft));
         }
-        outputBuffer_.append(static_cast<const char*>(data)+nwrote, nleft);
+        outputBuffer_.append(static_cast<const char*>(data) + nwrote, nleft);
         channel_->enableWriting();
     }
 }

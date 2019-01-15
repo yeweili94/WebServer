@@ -1,7 +1,5 @@
 #include <WebServer/EventLoop.h>
 #include <WebServer/Channel.h>
-// #include <WebServer/Poller.h>
-// #include <WebServer/EPollPoller.h>
 #include <WebServer/base/Logging.h>
 
 #include <boost/function.hpp>

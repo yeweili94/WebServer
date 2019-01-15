@@ -18,3 +18,7 @@ target_link_libraries(EventLoopThread_test libserver_net)
 
 add_executable(Acceptor_test Acceptor_test.cpp)
 target_link_libraries(Acceptor_test libserver_net)
+
+add_executable(Buffer_test Buffer_test.cpp)
+target_link_libraries(Buffer_test libserver_net)
+
