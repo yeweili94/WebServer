@@ -274,8 +274,32 @@ public: //readIntxx
         Slice s = nextAll();
         return std::string(s.data(), s.size());
     }
+public:
+    const char* findCRLF() const {
+        const char* crlf = std::search(data(), writeBegin(), KCRLF, KCRLF + 2);
+        return crlf == writeBegin() ? nullptr : crlf;
+    }
 
+    const char* findCRLF(const char* start) const {
+        assert(data() <= start);
+        assert(start <= writeBegin());
+        const char* crlf = std::search(start, writeBegin(), KCRLF, KCRLF + 2);
+        return crlf == writeBegin() ? nullptr : crlf;
+    }
+
+    const char* findEOL() const {
+        const void* eol = ::memchr(data(), '\n', length());
+        return static_cast<const char*>(eol);
+    }
+
+    const char* findEOL(const char* start) const {
+        assert(pos >= data());
+        assert(pos <= writeBegin());
+        const void* eol = ::memchr(start, '\n', writeBegin() - start);
+        return static_cast<const char*>(eol);
+    }
 private:
+
     char* begin()
     {
         return buffer_;
