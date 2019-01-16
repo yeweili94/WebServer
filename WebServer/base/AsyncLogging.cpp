@@ -30,7 +30,7 @@ ywl::AsyncLogging::AsyncLogging(const std::string logFileName, int flushInterval
 void ywl::AsyncLogging::append(const char* logline, int len)
 {
     MutexLockGuard lock(mutex_);
-    if (currentBuffer_->avail() > len)
+    if (currentBuffer_->writeableBytes() > len)
     {
         currentBuffer_->append(logline, len);
     }

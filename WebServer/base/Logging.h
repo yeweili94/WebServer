@@ -39,7 +39,7 @@ private:
 
         LogStream stream_;
         int line_;
-        std::string basename_;
+        std::string logPosFileName_;
         Timestamp time_;
     private:
     };

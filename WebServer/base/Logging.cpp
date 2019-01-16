@@ -13,16 +13,16 @@ static pthread_once_t ponce_ = PTHREAD_ONCE_INIT;
 //singleton
 static ywl::AsyncLogging *AsyncLogger_;
 
-//初始化log文件名
-std::string ywl::Logger::logFileName_ = "./ywl_WebServer.log";
+//默认初始化log文件名
+std::string ywl::Logger::logFileName_ = "./ywl_WebServer";
 
-void once_init()
+static void once_init()
 {
     AsyncLogger_ = new ywl::AsyncLogging(ywl::Logger::getLogFileName());
     AsyncLogger_->start();
 }
 
-void output(const char* msg, int len)
+static void output(const char* msg, int len)
 {
     pthread_once(&ponce_, once_init);
     AsyncLogger_->append(msg, len);
@@ -35,7 +35,7 @@ __thread char t_time[32];
 Logger::Impl::Impl(const char* filename, int line)
     : stream_(),
       line_(line),
-      basename_(filename),
+      logPosFileName_(filename),
       time_(Timestamp::now())
 {
     formatTime();
@@ -66,7 +66,7 @@ Logger::Logger(const char* fileName, int line, int level)
 
 Logger::~Logger()
 {
-    impl_.stream_ << " -- " << impl_.basename_ << ':' << impl_.line_ << '\n';
+    impl_.stream_ << " -- " << impl_.logPosFileName_ << ':' << impl_.line_ << '\n';
     const LogStream::Buffer& buf(stream().buffer());
     output(buf.data(), buf.length());
     if (level_ == 1)

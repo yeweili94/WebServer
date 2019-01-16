@@ -4,7 +4,6 @@ set(base_SRC
     CountDownLatch.cpp
     Timestamp.cpp
     ThreadPool.cpp
-    FileUtil.cpp
     LogFile.cpp
     LogStream.cpp
     AsyncLogging.cpp

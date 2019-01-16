@@ -65,7 +65,7 @@ template<typename T>
 void LogStream::formatInteger(T v)
 {
     //buffer容不下KMaxNumericSize则丢弃
-    if (buffer_.avail() >= KMaxNumericSize)
+    if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         size_t len = convert(buffer_.current(), v);
         buffer_.add(len);
@@ -124,7 +124,7 @@ LogStream& LogStream::operator<<(unsigned long long v)
 LogStream& LogStream::operator<<(const void* p)
 {
     uintptr_t v = reinterpret_cast<uintptr_t>(p);
-    if (buffer_.avail() >= KMaxNumericSize)
+    if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         char* buf = buffer_.current();
         buf[0] = '0';
@@ -137,7 +137,7 @@ LogStream& LogStream::operator<<(const void* p)
 
 LogStream& LogStream::operator<<(double v)
 {
-    if (buffer_.avail() >= KMaxNumericSize)
+    if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         int len = snprintf(buffer_.current(), KMaxNumericSize, "%.12g", v);
         buffer_.add(len);
@@ -147,7 +147,7 @@ LogStream& LogStream::operator<<(double v)
 
 LogStream& LogStream::operator<<(long double v)
 {
-    if (buffer_.avail() >= KMaxNumericSize)
+    if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         int len = snprintf(buffer_.current(), KMaxNumericSize, "%.12Lg", v);
         buffer_.add(len);

@@ -76,8 +76,10 @@ int main()
     // 共500014行
     type_test();
     stressing_single_thread();
+    sleep(3);
     other();
-    /* FATAL << "test fatal!\n"; */
+    sleep(3);
     stressing_multi_threads();
+    sleep(3);
     return 0;
 }

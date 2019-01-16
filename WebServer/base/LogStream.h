@@ -13,7 +13,7 @@ const int KLargeBuffer = 1000 * 4000;
 
 namespace ywl
 {
-template<int SIZE>
+template<size_t SIZE>
 class FixedBuffer : boost::noncopyable
 {
 public:
@@ -27,7 +27,7 @@ public:
 
     void append(const char* buf, size_t len)
     {
-        if (avail() > static_cast<int>(len))
+        if (writeableBytes() > static_cast<int>(len))
         {
             memcpy(cur_, buf, len);
             cur_ += len;
@@ -38,7 +38,7 @@ public:
     int length() const { return static_cast<int>(cur_ - data_); }
 
     char* current() { return cur_; }
-    int avail() const { return static_cast<int>(end() - cur_); }
+    int writeableBytes() const { return static_cast<int>(end() - cur_); }
     void add(size_t len) { cur_ += len; }
 
     void reset() {cur_ = data_;}
