@@ -36,47 +36,57 @@ public:
         delete[] buffer_;
         buffer_ = nullptr;
     }
+
 public:
     size_t length() const
     {
         assert(writerIndex_ >= readerIndex_);
         return readableBytes();
     }
+
     size_t size() const
     {
         return length();
     }
+
     char* data()
     {
         return buffer_ + readerIndex_;
     }
+
     const char* data() const
     {
         return buffer_+readerIndex_;
     }
+    
     char* writeBegin()
     {
         return buffer_ + writerIndex_;
     }
+
     const char* writeBegin() const
     {
         return buffer_ + writerIndex_;
     }
+
     size_t writeableBytes()
     {
         assert(writerIndex_ <= capacity_);
         return capacity_ - writerIndex_;
     }
+
     size_t readableBytes() const
     {
         assert(writerIndex_ >= readerIndex_);
         return writerIndex_ - readerIndex_;
     }
+
     size_t prependableBytes()
     {
         assert(readerIndex_ >= 0);
         return readerIndex_;
     }
+
     size_t capacity()
     {
         return capacity_;
@@ -127,10 +137,12 @@ public:
             writerIndex_ = readerIndex_ + n;
         }
     }
+
     void reset()
     {
         truncate(0);
     }
+
     void reserve(size_t len)
     {
         if (capacity_ - reserved_prepend_size_ >= len) {
@@ -138,6 +150,7 @@ public:
         }
         growth(len + reserved_prepend_size_);
     }
+
     void ensureWriteableBytes(size_t len)
     {
         if (writeableBytes() < len)
@@ -161,21 +174,26 @@ public:
         assert(writerIndex_ + len <= capacity_);
         writerIndex_ += len;
     }
+
     void append(const void* data, size_t len)
     {
         append(static_cast<const char*>(data), len);
     }
+
     void append(std::string str)
     {
         append(str.c_str(), str.size());
     }
+
     void appendInt8(int8_t x)
     {
         append(&x, sizeof x);
     }
+
     void append(const Slice& slice) {
         append(slice.data(), slice.size());
     }
+
     void prepend(const void* data, size_t len)
     {
         assert(len <= readerIndex_);
@@ -183,11 +201,13 @@ public:
         memcpy(begin()+readerIndex_, p, len);
         readerIndex_ -= len;
     }
+
     void prependInt16(int16_t x)
     {
         int16_t be16 = be16toh(x);
         prepend(&be16, sizeof be16);
     }
+
     void prependInt32(int32_t x)
     {
         int32_t be32 = be32toh(x);
@@ -202,6 +222,7 @@ public: // peekIntxx
         ::memcpy(&be32, data(), sizeof be32);
         return be32toh(be32);
     }
+
     int16_t peekInt16() const
     {
         assert(length() >= sizeof(int16_t));
@@ -209,7 +230,8 @@ public: // peekIntxx
         ::memcpy(&be16, data(), sizeof be16);
         return be16toh(be16);
     }
-     int8_t peekInt8() const
+
+    int8_t peekInt8() const
     {
         assert(length() >= sizeof(int8_t));
         int16_t be8 = 0;
@@ -224,24 +246,29 @@ public: //readIntxx
         retrieve(sizeof result);
         return result;
     }
+
     int16_t readInt16()
     {
         int16_t result = peekInt16();
         retrieve(sizeof result);
         return result;
     }
+
     int8_t readInt8()
     {
         int8_t result = peekInt8();
         retrieve(sizeof result);
         return result;
     }
+
     Slice toSlice() const {
         return Slice(data(), length());
     }
+
     std::string toString() const {
         return std::string(data(), length());
     }
+
     void shrink(size_t reserve) {
         Buffer other(length() + reserve);
         other.append(toSlice());
@@ -304,10 +331,12 @@ private:
     {
         return buffer_;
     }
+
     const char* begin() const
     {
         return buffer_;
     }
+
     void growth(size_t len)
     {
         if (writeableBytes() + prependableBytes() < len + reserved_prepend_size_) {
