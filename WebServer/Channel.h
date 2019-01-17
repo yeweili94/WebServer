@@ -69,7 +69,7 @@ class Channel : boost::noncopyable
   const int  fd_;
   int        events_;
   int        revents_;
-  int        status_; // used by Poller.
+  int        status_; 
 
   bool eventHandling_;
   ReadEventCallback readCallback_;

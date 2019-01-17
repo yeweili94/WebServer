@@ -40,6 +40,8 @@ public:
     bool connected() const { return state_ == Connected; }
     //send data to peer client
     void send(const void* message, size_t len);
+    void send(const std::string& message);
+    void send(const Slice& message);
     void shutdown();
     void setTcpNoDelay(bool on);
 

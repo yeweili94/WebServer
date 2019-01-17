@@ -44,7 +44,6 @@ public:
     const char* data() const {
         return data_;
     }
-
     size_t size() const
     {
         return size_;

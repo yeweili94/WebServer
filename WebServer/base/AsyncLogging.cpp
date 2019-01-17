@@ -78,11 +78,13 @@ void ywl::AsyncLogging::threadFunc()
                 cond_.waitForSeconds(flushInterval_);
             }
             buffers_.push_back(currentBuffer_);
-            currentBuffer_.reset();
 
             //std::move avoid to increment the count
             currentBuffer_ = std::move(newBuffer1);
-            bufferToWrite.swap(buffers_);
+            std::swap(bufferToWrite, buffers_);
+            //if nextBuffer_ is null it must be moved to currentBuffer_
+            //at the append function, by the way if the append is too fast
+            //acturally, buffers_.size() may be very large
             if (!nextBuffer_)
             {
                 //std::move avoid to increment the count
@@ -92,14 +94,15 @@ void ywl::AsyncLogging::threadFunc()
 
         assert(!bufferToWrite.empty());
 
-        if (bufferToWrite.size() > 25)
-        {
-            bufferToWrite.erase(bufferToWrite.begin() + 2, bufferToWrite.end());
-        }
+        // if (bufferToWrite.size() > 25)
+        // {
+            // bufferToWrite.resize(2);
+        // }
 
         for (size_t i = 0; i < bufferToWrite.size(); i++)
         {
             output.append(bufferToWrite[i]->data(), bufferToWrite[i]->length());
+            bufferToWrite[i]->reset();
         }
 
         if (bufferToWrite.size() > 2)
@@ -113,7 +116,6 @@ void ywl::AsyncLogging::threadFunc()
             assert(!bufferToWrite.empty());
             newBuffer1 = bufferToWrite.back();
             bufferToWrite.pop_back();
-            newBuffer1->reset();
         }
 
         if (!newBuffer2)
@@ -121,7 +123,6 @@ void ywl::AsyncLogging::threadFunc()
             assert(!bufferToWrite.empty());
             newBuffer2 = bufferToWrite.back();
             bufferToWrite.pop_back();
-            newBuffer2->reset();
         }
 
         bufferToWrite.clear();

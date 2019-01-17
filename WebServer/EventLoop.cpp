@@ -6,7 +6,7 @@
 #include <boost/bind.hpp>
 #include <boost/implicit_cast.hpp>
 
-#include <poll.h>
+#include <signal.h>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 
@@ -36,7 +36,12 @@ int createEventfd()
     return evtfd;
 }
 
+void IgnoreSIGPIPE()
+{
+    ::signal(SIGPIPE, SIG_IGN);
 }
+
+}//namespace
 
 EventLoop* EventLoop::getEventLoopOfCurrentThread()
 {
@@ -56,6 +61,7 @@ EventLoop::EventLoop()
     wakeupChannel_(new Channel(this, wakeupFd_)),
     currentActiveChannel_(NULL)
 {
+    IgnoreSIGPIPE();
     if (epollfd_ < 0) 
     {
         FATAL << "epoll_create() failed!";
@@ -285,7 +291,7 @@ void EventLoop::fillActiveChannels(int numEvents)
 void EventLoop::epollUpdateChannel(Channel* channel)
 {
     assertInLoopThread();
-    LOG << "fd = " << channel->fd() << "events = " << channel->events();
+    LOG << "fd = " << channel->fd() << " events = " << channel->events();
     const int status = channel->status();
     if (status == KNew)
     {

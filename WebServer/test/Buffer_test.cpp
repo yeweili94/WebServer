@@ -33,7 +33,8 @@ int main()
     std::cout << buffer.nextAllString() << std::endl;
     sleep(1);
     printf("done!!!!\n");
-    testAppend(buffer, 20000);
+    testAppend(buffer, 1026);
+    std::cout << buffer.nextAll().toString() << std::endl;
     sleep(1);
     printf("done!!!!\n");
     testAppend(buffer, 200000);
