@@ -15,8 +15,8 @@ namespace net
 class Buffer : boost::noncopyable
 {
 public:
-    static const size_t KInitialSize = 1024;
-    static const size_t ReservedPrependSize = 8;
+    static const size_t KInitialSize;
+    static const size_t ReservedPrependSize;
 
     Buffer(int iniatiasize = KInitialSize, int reserveSize = ReservedPrependSize)
         : readerIndex_(reserveSize),

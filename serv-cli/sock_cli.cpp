@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <utility>
+#include <vector>
 #include "readline.hpp"
 
 #define ERR_EXIT(m) \
@@ -23,8 +24,8 @@
     } while(0)
 
 void str_cli(FILE* fp, int sockfd) {
-    char recvbuf[1024] = {0};
-    char sendbuf[1024] = {0};
+    char recvbuf[102400] = {0};
+    char sendbuf[102400] = {0};
     fd_set rset;
     int maxfd;
     int n;
@@ -57,7 +58,8 @@ void str_cli(FILE* fp, int sockfd) {
             if (fgets(sendbuf, sizeof(sendbuf), stdin) == NULL) {
                 break;
             }
-            writen(sockfd, sendbuf, strlen(sendbuf));
+            std::vector<char> vec(18, 'c');
+            ::write(sockfd, &*vec.begin(), vec.size());
             memset(sendbuf, 0, sizeof(sendbuf));
         }
     }
@@ -73,8 +75,8 @@ int main() {
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htobe16(5100);
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servaddr.sin_port = htobe16(8900);
+    servaddr.sin_addr.s_addr = inet_addr("192.1.2.3");
 
     if (connect(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
         ERR_EXIT("connect");

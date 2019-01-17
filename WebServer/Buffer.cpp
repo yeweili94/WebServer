@@ -4,6 +4,8 @@ using namespace ywl;
 using namespace ywl::net;
 
 const char Buffer::KCRLF[] = "\r\n";
+const size_t Buffer::KInitialSize = 1024;
+const size_t Buffer::ReservedPrependSize = 8;
 
 ssize_t Buffer::readFd(int sockfd, int *savedErrno)
 {
