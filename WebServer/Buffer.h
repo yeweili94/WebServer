@@ -197,9 +197,9 @@ public:
     void prepend(const void* data, size_t len)
     {
         assert(len <= readerIndex_);
+        readerIndex_ -= len;
         const char* p = static_cast<const char*>(data);
         memcpy(begin()+readerIndex_, p, len);
-        readerIndex_ -= len;
     }
 
     void prependInt16(int16_t x)
