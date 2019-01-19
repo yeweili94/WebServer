@@ -4,7 +4,7 @@
 #include <WebServer/Channel.h>
 #include <WebServer/InetAddress.h>
 #include <WebServer/EventLoop.h>
-#include <WebServer/Buffer.h>
+#include <WebServer/CirCularBuffer.h>
 #include <WebServer/base/Timestamp.h>
 
 #include <boost/enable_shared_from_this.hpp>

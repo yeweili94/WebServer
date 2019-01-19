@@ -20,7 +20,7 @@ void defaultConnectionCallback(const TcpConnectionPtr& conn)
 
 void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buf, Timestamp)
 {
-    std::string message = buf->retrieveAllAsString();
+    std::string message = buf->nextAllString();
     fprintf(stderr, "%s\n", message.c_str());
 }
 

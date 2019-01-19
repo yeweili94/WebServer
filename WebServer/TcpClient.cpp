@@ -15,8 +15,9 @@ namespace detail
 void defaultMessageCallback(const TcpConnectionPtr& conn, Buffer* buf, Timestamp timestamp)
 {
     (void) timestamp;
-    Slice slice = buf->nextAll();
-    conn->send(slice);
+    // Slice slice = buf->nextAll();
+    std::string str = buf->nextAllString();
+    conn->send(str);
 }
 
 void defaultConnectionCallback(const TcpConnectionPtr& conn)
