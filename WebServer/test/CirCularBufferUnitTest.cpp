@@ -150,6 +150,29 @@ TEST(Buffer, FindEOL2) {
     b[5] = '\n';
     buf.append(b, sizeof b);
     EXPECT_TRUE(buf.findCRLF() != nullptr);
+    EXPECT_TRUE(buf.findCRLF() == buf.data() + 4);
+}
+
+TEST(Buffer, FindEOL3) {
+    Buffer buf;
+    char b[1024] = {0};
+    b[0] = '\n';
+    b[1023] = '\r';
+    buf.append(b, sizeof b);
+    EXPECT_TRUE(buf.findCRLF() != nullptr);
+    EXPECT_EQ(buf.findCRLF(), buf.data() + 1023);
+}
+
+TEST(Buffer, FindEOL4) {
+    Buffer buf;
+    char b[1024] = {0};
+    b[12] = '\r';
+    b[13] = '\r';
+    b[14] = '\n';
+    b[1000] = '\r';
+    b[1001] = '\n';
+    buf.append(b, sizeof b);
+    EXPECT_EQ(buf.findCRLF(), buf.data() + 13);
 }
 
 }
