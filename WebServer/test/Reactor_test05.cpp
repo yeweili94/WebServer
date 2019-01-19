@@ -31,8 +31,9 @@ void onMessage(const TcpConnectionPtr& conn,
            // buf->readableBytes(), conn->name().c_str());
     (void)buf;
     (void)receiveTime;
-    Slice slice = buf->nextAll();
-    conn->send(slice);
+    // Slice slice = buf->nextAll();
+    std::string str = buf->nextAllString();
+    conn->send(str);
 }
 
 int main()
