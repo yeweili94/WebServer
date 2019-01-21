@@ -8,6 +8,8 @@
 using namespace ywl;
 using namespace ywl::net;
 
+static MemoryPool<sizeof(Channel)> CHANNEL_MEMORY_POOL;
+
 const int Channel::kNoneEvent = 0;
 const int Channel::kReadEvent = EPOLLIN | EPOLLPRI;
 const int Channel::kWriteEvent = EPOLLOUT;
@@ -17,15 +19,22 @@ Channel::Channel(EventLoop* loop, int fd)
       fd_(fd),
       events_(0),
       revents_(0),
-      status_(-1),  //KNew
-      eventHandling_(false)
+      status_(-1)  //KNew
 {
     assert(status_ == -1);
 }
 
 Channel::~Channel()
 {
-    assert(!eventHandling_);
+}
+
+void* Channel::operator new(size_t size) {
+    (void)size;
+    return CHANNEL_MEMORY_POOL.malloc();
+}
+
+void Channel::operator delete(void* p) {
+    CHANNEL_MEMORY_POOL.free(p);
 }
 
 void Channel::update()
@@ -40,6 +49,7 @@ void Channel::remove()
     loop_->removeChannel(this);
 }
 
+//事件分发器
 void Channel::handleEvent(Timestamp receiveTime)
 {
     //POLLIN 普通可读事件
@@ -51,7 +61,6 @@ void Channel::handleEvent(Timestamp receiveTime)
     //这里关于POLLHUP什么时候会触发？
     //正常情况下如果是客户端关闭连接，则只会触发POLLIN,
     //若是服务器端主动关闭连接，导致客户端再关闭连接，则会触发POLLIN 和 POLLHUP
-    eventHandling_ = true;
     if ((revents_ & POLLHUP) && !(revents_ & POLLIN))
     {
         LOG << "Channel::handle_event() POLLHUP";
@@ -73,6 +82,5 @@ void Channel::handleEvent(Timestamp receiveTime)
     {
         if (writeCallback_) writeCallback_();
     }
-    eventHandling_ = false;
 }
 

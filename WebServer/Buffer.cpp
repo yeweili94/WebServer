@@ -9,11 +9,11 @@ const char Buffer::kCRLF[] = "\r\n";
 const size_t Buffer::kCheapPrependSize = 8;
 const size_t Buffer::kInitialSize  = 1024;
 
-ssize_t Buffer::readFD(int fd, int* savedErrno) {
+ssize_t Buffer::readFd(int fd, int* savedErrno) {
     // saved an ioctl()/FIONREAD call to tell how much to read
     char extrabuf[65536];
     struct iovec vec[2];
-    const size_t writable = writableBytes();
+    const size_t writable = writeableBytes();
     vec[0].iov_base = begin() + write_index_;
     vec[0].iov_len = writable;
     vec[1].iov_base = extrabuf;

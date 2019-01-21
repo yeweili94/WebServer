@@ -11,6 +11,7 @@
 using namespace ywl;
 using namespace ywl::net;
 
+static MemoryPool<sizeof(TcpConnection)> TCPCONN_MEMORY_POOL_;
 //在TcpServer中的Acceptor中设置的NewConnectionCallback_，sockfd
 TcpConnection::TcpConnection(EventLoop* loop,
                                   const std::string& name,
@@ -24,7 +25,9 @@ TcpConnection::TcpConnection(EventLoop* loop,
       channel_(new Channel(loop, sockfd)),
       localAddr_(localAddr),
       peerAddr_(peerAddr),
-      highWaterMark_(64*1024*1024)
+      highWaterMark_(64*1024*1024),
+      inputBuffer_(16),
+      outputBuffer_(16)
 {
     //channel产生可读事件，回调handleRead()函数
     channel_->setReadCallback(
@@ -48,6 +51,15 @@ TcpConnection::~TcpConnection()
     ::sockets::Close(sockfd_);
     LOG << "TcpConnection::dtor[" << name_ << "] at " << this
         << " fd = " << channel_->fd();
+}
+
+void* TcpConnection::operator new(size_t size) {
+    (void)size;
+    return TCPCONN_MEMORY_POOL_.malloc();
+}
+
+void TcpConnection::operator delete(void* p) {
+    TCPCONN_MEMORY_POOL_.free(p);
 }
 
 void TcpConnection::handleRead(Timestamp receiveTime)
@@ -85,12 +97,12 @@ void TcpConnection::handleWrite()
         if (outputBuffer_.readableBytes() == 0)
         {
             channel_->disableWriting(); //停止关注可写事件,避免出现busy loop
-            if (writeCompleteCallback_) {
-                loop_->runInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-            }
+            // if (writeCompleteCallback_) {
+            //     loop_->runInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
+            // }
             if (state_ == Disconnecting) {//所有的数据都发送完毕，并且有人试图关闭连接，则可以关闭连接
-                                        //这个是shutdownInLoop是因为在shutdown()函数中有可能关闭不成功
-                shutdownInLoop();        //需要在发送缓冲区发送完毕时再做一次判断
+                                          //这个是shutdownInLoop是因为在shutdown()函数中有可能关闭不成功
+                shutdownInLoop();         //需要在发送缓冲区发送完毕时再做一次判断
             }
         } else {
             LOG << "data has not been write complete";
@@ -179,6 +191,7 @@ void TcpConnection::send(const void* data, size_t len)
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
     {
         nwrote = sockets::Write(channel_->fd(), data, len);
+        printf("directory write to sockfd %ld bytes\n", nwrote);
         if (nwrote < 0) {
             nwrote = 0;
             if (errno != EWOULDBLOCK) {
@@ -188,11 +201,11 @@ void TcpConnection::send(const void* data, size_t len)
             }
         } else {
             nleft = len - nwrote;
-            if (nleft == 0 && writeCompleteCallback_)
-            {
-                loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-                return;
-            }
+            // if (nleft == 0 && writeCompleteCallback_)
+            // {
+            //     loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
+            //     return;
+            // }
         }
     }
 

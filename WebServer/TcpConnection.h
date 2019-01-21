@@ -4,8 +4,10 @@
 #include <WebServer/Channel.h>
 #include <WebServer/InetAddress.h>
 #include <WebServer/EventLoop.h>
-#include <WebServer/CirCularBuffer.h>
+#include <WebServer/Buffer.h>
 #include <WebServer/base/Timestamp.h>
+#include <WebServer/Slice.h>
+#include <WebServer/MemoryPool.h>
 
 #include <boost/enable_shared_from_this.hpp>
 
@@ -33,6 +35,9 @@ public:
                      const InetAddress& peerAddr);
     ~TcpConnection();
 
+    void* operator new(size_t size);
+    void operator delete(void* p);
+
     EventLoop* getLoop() const { return loop_; }
     const std::string& name() const { return name_; }
     const InetAddress& localAddress() { return localAddr_; }
@@ -55,9 +60,9 @@ public:
     void setMessageCallback(const MessageCallback& cb) { 
         messageCallback_ = cb;
     }
-    void setWriteCompleteCallback(const ConnectionCallback& cb){
-        writeCompleteCallback_ = cb;
-    }
+    // void setWriteCompleteCallback(const ConnectionCallback& cb){
+    //     writeCompleteCallback_ = cb;
+    // }
     void setHighWaterMarkCallback(const HighWaterMarkCallback& cb, size_t highWaterMark) {
         highWaterMarkCallback_ = cb;
         highWaterMark_ = highWaterMark;
@@ -99,7 +104,7 @@ private:
 
     //所有的用户数据都拷贝到内核缓冲区时调用该回调函数
     //outputBuffer被清空也会回调该函数
-    WriteCompleteCallback writeCompleteCallback_;   //TcpServer中设置
+    // WriteCompleteCallback writeCompleteCallback_;   //TcpServer中设置
     //高水位标志回调函数,当发送数据太多缓冲区承受不了时调用此函数
     HighWaterMarkCallback highWaterMarkCallback_;   //TcpServer中设置
     size_t highWaterMark_;  //高水位标
@@ -108,7 +113,10 @@ private:
     Buffer outputBuffer_;
 
     boost::any contex_;
+    
 };
+
+
 
 }
 }

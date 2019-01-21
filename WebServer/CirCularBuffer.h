@@ -1,6 +1,7 @@
 #pragma once
-#include <WebServer/Util.h>
-#include <WebServer/Slice.h>
+// #include <WebServer/Util.h>
+// #include <WebServer/Slice.h>
+#include "./Util.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -310,6 +311,7 @@ public: // peekIntxx
         assert(length() >= sizeof(int16_t));
         int16_t be16 = 0;
         char buffer[sizeof be16];
+        peekUtility(buffer, sizeof buffer);
         ::memcpy(&be16, buffer, sizeof buffer);
         return be16toh(be16);
     }
@@ -317,8 +319,9 @@ public: // peekIntxx
     int8_t peekInt8() const
     {
         assert(length() >= sizeof(int8_t));
-        int16_t be8 = 0;
+        int8_t be8 = 0;
         char buffer[sizeof be8];
+        peekUtility(buffer, sizeof buffer);
         ::memcpy(&be8, buffer, sizeof buffer);
         return be8;
     }
@@ -367,31 +370,30 @@ public: //readIntxx
     ////read data from sockfd
     ssize_t readFd(int sockfd, int *savedErrno);
 
-    std::string nextString(size_t len) {
+    void nextString(size_t len, std::string& empty_str) {
         assert(len <= length());
+        empty_str.reserve(len);
         if (writerIndex_ > readerIndex_) {
-            std::string result(data(), len);
+            empty_str.append(data(), len);
             retrieve(len);
-            return result;
+            return;
         }
         if (!has_data_) {
-            return "";
+            return;
         }
         size_t surplus = capacity_ - readerIndex_;
         size_t prelen = len - surplus;
         if (surplus >= len) {
-            std::string result(data(), surplus);
+            empty_str.append(data(), surplus);
             retrieve(len);
-            return result;
+            return;
         }
-        std::string result(data(), surplus);
-        result += std::string(begin() + reserved_prepend_size_, prelen);
-        retrieve(len);
-        return result;
+        empty_str.append(begin() + reserved_prepend_size_, prelen);
+        retrieve(prelen);
     }
 
-    std::string nextAllString() {
-        return nextString(length());
+    void nextAllString(std::string& empty_str) {
+        return nextString(length(), empty_str);
     }
 
 //public:

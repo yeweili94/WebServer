@@ -1,5 +1,7 @@
-#include "./Slice.h"
-#include "./Util.h"
+// #include "./Slice.h"
+// #include "./Util.h"
+#include <WebServer/Slice.h>
+#include <WebServer/Util.h>
 #include <algorithm>
 
 namespace ywl
@@ -14,13 +16,13 @@ public:
     static const size_t kInitialSize;
 
     explicit Buffer(size_t initial_size = kInitialSize, size_t reserved_prepend_size = kCheapPrependSize)
-        : capacity_(reserved_prepend_size + initial_size)
-        , read_index_(reserved_prepend_size)
-        , write_index_(reserved_prepend_size)
-        , reserved_prepend_size_(reserved_prepend_size) {
+        : capacity_(reserved_prepend_size + initial_size),
+          read_index_(reserved_prepend_size),
+          write_index_(reserved_prepend_size),
+          reserved_prepend_size_(reserved_prepend_size) {
         buffer_ = new char[capacity_];
         assert(length() == 0);
-        assert(WritableBytes() == initial_size);
+        assert(writableBytes() == initial_size);
         assert(PrependableBytes() == reserved_prepend_size);
     }
 
@@ -78,7 +80,7 @@ public:
 
     // Make sure there is enough memory space to append more data with length len
     void ensureWritableBytes(size_t len) {
-        if (writableBytes() < len) {
+        if (writeableBytes() < len) {
             grow(len);
         }
 
@@ -223,7 +225,7 @@ public:
     }
 
     // ReadFromFD reads data from a fd directly into buffer,
-    ssize_t readFD(int fd, int* saved_errno);
+    ssize_t readFd(int fd, int* saved_errno);
 
     // Next returns a slice containing the next n bytes from the buffer,
     // advancing the buffer as if the bytes had been returned by Read.
@@ -252,7 +254,7 @@ public:
         return std::string(s.data(), s.size());
     }
 
-    std::string NextAllString() {
+    std::string nextAllString() {
         Slice s = nextAll();
         return std::string(s.data(), s.size());
     }
@@ -338,9 +340,14 @@ public:
         return capacity_;
     }
 
-    size_t writableBytes() const {
+    size_t writeableBytes() const {
         assert(capacity_ >= write_index_);
         return capacity_ - write_index_;
+    }
+
+    size_t readableBytes() const {
+        assert(write_index_ >= read_index_);
+        return write_index_ - read_index_;
     }
 
     size_t prependableBytes() const {
@@ -383,7 +390,7 @@ private:
     }
 
     void grow(size_t len) {
-        if (writableBytes() + prependableBytes() < len + reserved_prepend_size_) {
+        if (writeableBytes() + prependableBytes() < len + reserved_prepend_size_) {
             //grow the capacity
             size_t n = (capacity_ << 1) + len;
             size_t m = length();

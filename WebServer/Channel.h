@@ -2,6 +2,7 @@
 #define WEB_SERVER_CHANNEL_H
 
 #include <WebServer/base/Timestamp.h>
+#include <WebServer/MemoryPool.h>
 
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
@@ -27,6 +28,9 @@ class Channel : boost::noncopyable
   //谁污染，谁治理，RAII封装
   Channel(EventLoop* loop, int fd);
   ~Channel();
+
+  void* operator new(size_t size);
+  void operator delete(void* p);
 
   void handleEvent(Timestamp receiveTime);
   void setReadCallback(const ReadEventCallback& cb)
@@ -71,7 +75,6 @@ class Channel : boost::noncopyable
   int        revents_;
   int        status_; 
 
-  bool eventHandling_;
   ReadEventCallback readCallback_;
   EventCallback writeCallback_;
   EventCallback closeCallback_;

@@ -1,4 +1,5 @@
-#include <WebServer/CirCularBuffer.h>
+// #include <WebServer/CirCularBuffer.h>
+#include "./CirCularBuffer.h"
 
 using namespace ywl;
 using namespace ywl::net;
@@ -41,9 +42,8 @@ ssize_t Buffer::readFd(int sockfd, int *savedErrno)
     }
     else
     {
-        writerIndex_ = ReservedPrependSize;
+        writerIndex_ = reserved_prepend_size_;
         append(extrabuf, n - writable);
     }
-
     return n;
 }
