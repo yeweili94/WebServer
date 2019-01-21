@@ -1,6 +1,7 @@
 #include <WebServer/Channel.h>
 #include <WebServer/EventLoop.h>
 #include <WebServer/base/Logging.h>
+#include <WebServer/base/Singleton.h>
 
 #include <sstream>
 #include <poll.h>

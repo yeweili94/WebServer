@@ -2,6 +2,7 @@
 #include <WebServer/EventLoop.h>
 #include <WebServer/InetAddress.h>
 #include <WebServer/base/Timestamp.h>
+#include <signal.h>
 
 #include <stdio.h>
 
@@ -30,17 +31,22 @@ void onMessage(const TcpConnectionPtr& conn,
     // printf("onMessage(): reveived %zd bytes from connection [%s]\n",
            // buf->readableBytes(), conn->name().c_str());
     (void)receiveTime;
-    printf("buffer current data size is : %zu\n", buf->length());
-    printf("buffer readerableBytes is : %zu\n", buf->readableBytes());
-    size_t len = buf->length();
-    std::string str = buf->nextString(len / 2);
-    printf("buffer writeableBytes is : %zu\n", buf->writeableBytes());
+    // printf("buffer current data size is : %zu\n", buf->length());
+    // printf("buffer readerableBytes is : %zu\n", buf->readableBytes());
+    // size_t len = buf->length();
+    std::string str = buf->nextAllString();
+    // printf("buffer writeableBytes is : %zu\n", buf->writeableBytes());
     printf("send message:%s\n", str.c_str());
-    conn->send(str);
+    // conn->send(str);
+    buf->reset();
+    (void)conn;
+    // conn->shutdown();
 }
 
 int main()
 {
+    ::signal(SIGPIPE, SIG_IGN);
+    ::signal(SIGABRT, SIG_IGN);
     printf("main(): pid = %d\n", ::getpid());
 
     printf("sizeof TcpConnection is %lu\n", sizeof(TcpConnection));
@@ -49,7 +55,7 @@ int main()
     EventLoop loop;
 
     TcpServer server(&loop, listenAddr, "TestServer");
-    server.setThreadNum(4);
+    server.setThreadNum(8);
     server.setConnectionCallback(onConnection);
     server.setMessageCallback(onMessage);
     server.start();

@@ -1,5 +1,6 @@
 #include <WebServer/TcpConnection.h>
 #include <WebServer/base/Logging.h>
+#include <WebServer/base/Singleton.h>
 #include <WebServer/Channel.h>
 #include <WebServer/Util.h>
 

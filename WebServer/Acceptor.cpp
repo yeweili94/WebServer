@@ -47,7 +47,8 @@ void Acceptor::handleRead()
     struct sockaddr_in addr;
     bzero(&addr, sizeof addr);
     int connfd = -1;
-    while ((connfd = sockets::Accept(acceptFd_, &addr)) >= 0){
+    while ((connfd = sockets::Accept(acceptFd_, &addr)) >= 0)
+    {
         InetAddress peerAddr(0);
         peerAddr.setSockAddrInet(addr);
 
@@ -56,7 +57,7 @@ void Acceptor::handleRead()
         } else {
             sockets::Close(connfd);
         }
-    }//while
+    }
     if (errno == EMFILE)
     {
         ::close(idleFd_);
