@@ -29,10 +29,13 @@ void onMessage(const TcpConnectionPtr& conn,
 {
     // printf("onMessage(): reveived %zd bytes from connection [%s]\n",
            // buf->readableBytes(), conn->name().c_str());
-    (void)buf;
     (void)receiveTime;
-    // Slice slice = buf->nextAll();
-    std::string str = buf->nextAllString();
+    printf("buffer current data size is : %zu\n", buf->length());
+    printf("buffer readerableBytes is : %zu\n", buf->readableBytes());
+    size_t len = buf->length();
+    std::string str = buf->nextString(len / 2);
+    printf("buffer writeableBytes is : %zu\n", buf->writeableBytes());
+    printf("send message:%s\n", str.c_str());
     conn->send(str);
 }
 
@@ -40,6 +43,8 @@ int main()
 {
     printf("main(): pid = %d\n", ::getpid());
 
+    printf("sizeof TcpConnection is %lu\n", sizeof(TcpConnection));
+    printf("sizeo Channel is %lu\n", sizeof(Channel));
     InetAddress listenAddr(8900);
     EventLoop loop;
 

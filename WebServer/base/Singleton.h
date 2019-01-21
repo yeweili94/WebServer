@@ -28,6 +28,7 @@ private:
     static void destroy()
     {
         typedef char T_MUST_BE_COMPLETE_TYPE[sizeof(T) == 0 ? -1 : 1];
+        T_MUST_BE_COMPLETE_TYPE check; (void)check;
         delete value_;
     }
 

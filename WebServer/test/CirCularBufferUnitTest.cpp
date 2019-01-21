@@ -19,7 +19,8 @@ TEST(Buffer, AppendRead) {
     EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - str.size());
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize);
 
-    const std::string str2 = buf.nextString(50);
+    std::string str2;
+    buf.nextString(50, str2);
     EXPECT_EQ(buf.length(), str.size() - str2.size());
     EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - str.size() + 50);
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize + 50);
@@ -30,7 +31,8 @@ TEST(Buffer, AppendRead) {
     EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 2 * str.size() + 50);
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize + str2.size());
 
-    const std::string str3 = buf.nextAllString();
+    std::string str3;
+    buf.nextAllString(str3);
     EXPECT_EQ(str3.size(), 350);
     EXPECT_EQ(buf.length(), 0);
     EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize);

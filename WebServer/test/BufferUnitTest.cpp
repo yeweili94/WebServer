@@ -21,13 +21,13 @@ TEST(Buffer, AppendRead) {
 
     const std::string str2 = buf.nextString(50);
     EXPECT_EQ(buf.length(), str.size() - str2.size());
-    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - str.size());
-    EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize + str2.size());
+    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - str.size() + 50);
+    EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize + 50);
     EXPECT_STREQ(str2.c_str(), std::string(50, 'x').c_str());
     
     buf.append(str);
     EXPECT_EQ(buf.length(), 2 * str.size() - str2.size());
-    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 2 * str.size());
+    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 2 * str.size() + 50);
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize + str2.size());
 
     const std::string str3 = buf.nextAllString();
@@ -46,18 +46,22 @@ TEST(Buffer, Growth1) {
 
     buf.retrieve(50);
     EXPECT_EQ(buf.length(), 350);
-    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 400);
+    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 400 + 50);
     EXPECT_EQ(buf.prependableBytes(), 50 + Buffer::ReservedPrependSize);
 
-    buf.append(std::string(1000, 'z'));
-    EXPECT_EQ(buf.length(), 1350);
-    EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize);
+    buf.append(std::string(670, 'z'));
+    EXPECT_EQ(buf.length(), 1020);
+    EXPECT_EQ(buf.prependableBytes(), 4);
+    EXPECT_EQ(buf.capacity(), 1024 + 8);
+
+    buf.append(std::string(8, 'x'));
+    EXPECT_EQ(buf.length(), 1028);
+    EXPECT_EQ(buf.capacity(), 2072);
 
     buf.reset();
     EXPECT_EQ(buf.length(), 0);
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize);
     EXPECT_TRUE(buf.writeableBytes() >= Buffer::KInitialSize * 2);
-    EXPECT_EQ(buf.writeableBytes(), 3056);
 }
 
 TEST(Buffer, Growth2) {
@@ -70,12 +74,12 @@ TEST(Buffer, Growth2) {
 
     buf.retrieve(50);
     EXPECT_EQ(buf.length(), 350);
-    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 400);
+    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 400 + 50);
     EXPECT_EQ(buf.prependableBytes(), preprend_size + 50);
 
     buf.append(std::string(1000, 'z'));
     EXPECT_EQ(buf.length(), 1350);
-    EXPECT_EQ(buf.writeableBytes(), (Buffer::KInitialSize)*2+1000-1350+16);
+    EXPECT_EQ(buf.writeableBytes(), 1714);
 }
 
 TEST(Buffer, InsideGrowth) {
@@ -86,13 +90,13 @@ TEST(Buffer, InsideGrowth) {
 
     buf.retrieve(500);
     EXPECT_EQ(buf.length(), 300);
-    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 800);
+    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 800 + 500);
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize + 500);
 
     buf.append(std::string(300, 'z'));
     EXPECT_EQ(buf.length(), 600);
     EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 600);
-    EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize);
+    EXPECT_EQ(buf.prependableBytes(), buf.writeableBytes());
 }
 
 TEST(Buffer, Prepend) {
@@ -110,12 +114,33 @@ TEST(Buffer, Prepend) {
     EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize - 4);
 }
 
+TEST(Buffer, Prepend2) {
+    Buffer buf;
+    buf.append(std::string(5, 'x'));
+    EXPECT_EQ(buf.length(), 5);
+    EXPECT_EQ(buf.writeableBytes(), Buffer::KInitialSize - 5);
+    EXPECT_EQ(buf.prependableBytes(), Buffer::ReservedPrependSize);
+
+    std::string s(3, 'x');
+    buf.prepend(s.c_str(), s.size());
+    EXPECT_EQ(buf.prependableBytes(), 5);
+    EXPECT_STREQ(std::string(buf.data(), buf.length()).c_str(), std::string(8, 'x').c_str());
+}
+
+TEST(Buffer, PeekInt32) {
+    uint32_t x = 78;
+    Buffer buffer;
+    buffer.prependInt32(x);
+    uint32_t r = buffer.peekInt32();
+    assert(x == r);
+    (void)r;
+}
+
 TEST(Buffer, FindEOL) {
     Buffer buf;
     buf.append(std::string(100000, 'x'));
     const char* null = nullptr;
-    EXPECT_EQ(buf.findEOL(), null);
-    EXPECT_EQ(buf.findEOL(buf.data() + 80000), null);
+    EXPECT_EQ(buf.findCRLF(), null);
 }
 
 TEST(Buffer, FindEOL2) {
@@ -124,8 +149,30 @@ TEST(Buffer, FindEOL2) {
     b[4] = '\r';
     b[5] = '\n';
     buf.append(b, sizeof b);
-    EXPECT_TRUE(buf.findEOL() != nullptr);
     EXPECT_TRUE(buf.findCRLF() != nullptr);
+    EXPECT_TRUE(buf.findCRLF() == buf.data() + 4);
+}
+
+TEST(Buffer, FindEOL3) {
+    Buffer buf;
+    char b[1024] = {0};
+    b[0] = '\n';
+    b[1023] = '\r';
+    buf.append(b, sizeof b);
+    EXPECT_TRUE(buf.findCRLF() != nullptr);
+    EXPECT_EQ(buf.findCRLF(), buf.data() + 1023);
+}
+
+TEST(Buffer, FindEOL4) {
+    Buffer buf;
+    char b[1024] = {0};
+    b[12] = '\r';
+    b[13] = '\r';
+    b[14] = '\n';
+    b[1000] = '\r';
+    b[1001] = '\n';
+    buf.append(b, sizeof b);
+    EXPECT_EQ(buf.findCRLF(), buf.data() + 13);
 }
 
 }

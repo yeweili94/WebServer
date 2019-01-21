@@ -110,7 +110,7 @@ void TcpServer::newConnection(int sockfd, const InetAddress& peerAddr)
     conn->setConnectionCallback(connectionCallback_);
     LOG << "Set connectioncallback";
     conn->setMessageCallback(messageCallback_);
-    conn->setWriteCompleteCallback(writeCompleteCallback_);
+    // conn->setWriteCompleteCallback(writeCompleteCallback_);
     conn->setCloseCallback(
         boost::bind(&TcpServer::removeConnection, this, _1));
     conn->getLoop()->runInLoop(boost::bind(&TcpConnection::connectEstablished, conn));

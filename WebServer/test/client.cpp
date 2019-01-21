@@ -8,8 +8,6 @@ using namespace ywl::net;
 int main()
 {
     EventLoop loop;
-    // EventLoopThreadPool pool(&loop);
-    // pool.setThreadNum(1);
     InetAddress servAddr("127.0.0.1", 8900);
     TcpClient client(&loop, servAddr, "client");
     client.start();

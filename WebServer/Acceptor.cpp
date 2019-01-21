@@ -44,31 +44,25 @@ void Acceptor::listen()
 void Acceptor::handleRead()
 {
     loop_->assertInLoopThread();
-    InetAddress peerAddr(0);
     struct sockaddr_in addr;
     bzero(&addr, sizeof addr);
-    int connfd = sockets::Accept(acceptFd_, &addr);
-    peerAddr.setSockAddrInet(addr);
+    int connfd = -1;
+    while ((connfd = sockets::Accept(acceptFd_, &addr)) >= 0){
+        InetAddress peerAddr(0);
+        peerAddr.setSockAddrInet(addr);
 
-    if (connfd >= 0)
-    {
-        if (NewConnectionCallback_)
-        {
+        if (NewConnectionCallback_) {
             NewConnectionCallback_(connfd, peerAddr);
-        }
-        else
-        {
+        } else {
             sockets::Close(connfd);
         }
-    }
-    else
+    }//while
+    if (errno == EMFILE)
     {
-        if (errno == EMFILE)
-        {
-            ::close(idleFd_);
-            idleFd_ = ::accept(acceptFd_, NULL, NULL);
-            ::close(idleFd_);
-            idleFd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
-        }
+        ::close(idleFd_);
+        idleFd_ = ::accept(acceptFd_, NULL, NULL);
+        ::close(idleFd_);
+        idleFd_ = ::open("/dev/null", O_RDONLY | O_CLOEXEC);
     }
+
 }
