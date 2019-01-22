@@ -13,6 +13,8 @@ namespace ywl
 {
 class AsyncLogging;
 
+const char* strerror_tl(int savedErrno);
+
 class Logger
 {
 public:

@@ -47,6 +47,7 @@ public:
     void send(const void* message, size_t len);
     void send(const std::string& message);
     void send(const Slice& message);
+    void send(const Buffer* buf);
     void shutdown();
     void setTcpNoDelay(bool on);
 

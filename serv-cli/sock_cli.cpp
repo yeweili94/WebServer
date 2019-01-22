@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include <utility>
-#include <vector>
 #include "readline.hpp"
 
 #define ERR_EXIT(m) \
@@ -24,8 +23,16 @@
     } while(0)
 
 void str_cli(FILE* fp, int sockfd) {
-    char recvbuf[102400] = {0};
-    char sendbuf[102400] = {0};
+    //set sockfd nonblocking 
+    int flag = ::fcntl(sockfd, F_GETFL, 0);
+    flag |= O_NONBLOCK;
+    int ret = ::fcntl(sockfd, F_SETFL, flag);
+    if (ret < 0) {
+        ERR_EXIT("nonblocking");
+    }
+
+    char recvbuf[10240] = {0};
+    char sendbuf[10240] = {0};
     fd_set rset;
     int maxfd;
     int n;
@@ -44,13 +51,14 @@ void str_cli(FILE* fp, int sockfd) {
         }
 
         if (FD_ISSET(sockfd, &rset)) {
-            if ( (n = readline(sockfd, recvbuf, sizeof(recvbuf))) == -1 ) {
+            if ( (n = read(sockfd, recvbuf, sizeof(recvbuf))) == -1 ) {
                 ERR_EXIT("readline");
             } else if (n == 0) {
                 printf("server close\n");
                 break;
             }
-            fputs(recvbuf, stdout);
+            // fputs(recvbuf, stdout);
+            printf("%s\n", recvbuf);
             memset(recvbuf, 0, sizeof(recvbuf));
         }
 
@@ -58,8 +66,8 @@ void str_cli(FILE* fp, int sockfd) {
             if (fgets(sendbuf, sizeof(sendbuf), stdin) == NULL) {
                 break;
             }
-            std::vector<char> vec(18, 'c');
-            ::write(sockfd, &*vec.begin(), vec.size());
+            fprintf(stderr, "send %lu bytes\n", strlen(sendbuf));
+            write(sockfd, sendbuf, strlen(sendbuf)-1);
             memset(sendbuf, 0, sizeof(sendbuf));
         }
     }
@@ -76,7 +84,7 @@ int main() {
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htobe16(8900);
-    servaddr.sin_addr.s_addr = inet_addr("192.1.2.3");
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (connect(sock, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
         ERR_EXIT("connect");

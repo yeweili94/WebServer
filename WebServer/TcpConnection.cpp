@@ -135,7 +135,7 @@ void TcpConnection::handleError()
 {
     int err = sockets::getSocketError(channel_->fd());
     LOG << "TcpConnection::handleError [" << name_ 
-        << "] -SO_ERROR = " << err;
+        << "] -SO_ERROR = " << err << " " << strerror(err);
 }
 
 
@@ -167,13 +167,23 @@ void TcpConnection::shutdown()
     }
 }
 
+//we don't want to copy data, so it's not thread safe
+//do not use this function in other thread
 void TcpConnection::send(const std::string& message)
 {
     send(message.c_str(), message.size());
 }
 
-void TcpConnection::send(const Slice& message) {
+void TcpConnection::send(const Slice& message)
+{
     send(message.data(), message.size());
+}
+
+void TcpConnection::send(const Buffer* buf)
+{
+    // Slice slice(buf->data(), buf->readableBytes());
+    // send(slice);
+    send(buf->data(), buf->readableBytes());
 }
 
 void TcpConnection::send(const void* data, size_t len)
@@ -192,7 +202,6 @@ void TcpConnection::send(const void* data, size_t len)
     if (!channel_->isWriting() && outputBuffer_.readableBytes() == 0)
     {
         nwrote = sockets::Write(channel_->fd(), data, len);
-        printf("directory write to sockfd %ld bytes\n", nwrote);
         if (nwrote < 0) {
             nwrote = 0;
             if (errno != EWOULDBLOCK) {

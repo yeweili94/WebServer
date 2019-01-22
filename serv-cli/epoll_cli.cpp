@@ -83,7 +83,7 @@ int main()
     struct sockaddr_in servaddr;
     bzero(&servaddr, sizeof servaddr);
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htobe16(5100);
+    servaddr.sin_port = htobe16(8900);
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (connect(sock, (struct sockaddr*)&servaddr, sizeof servaddr) < 0) {

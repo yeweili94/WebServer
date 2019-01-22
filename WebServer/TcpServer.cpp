@@ -79,8 +79,6 @@ void TcpServer::start()
 
     if (!acceptor_->listenning())
     {
-        // mainLoop_->runInLoop(
-            // std::bind(&Acceptor::listen, get_pointer(acceptor_)));
         acceptor_->listen();
     }
 }

@@ -35,3 +35,4 @@ set(HEADERS
 install(FILES ${HEADERS} DESTINATION include/WebServer/net)
 
 add_subdirectory(test)
+add_subdirectory(http)

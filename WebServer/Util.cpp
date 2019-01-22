@@ -14,12 +14,16 @@ void sockets::setNonBlockingAndCloseOnExec(int sockfd)
     int flags = ::fcntl(sockfd, F_GETFL, 0);
     flags |= O_NONBLOCK;
     int ret = ::fcntl(sockfd, F_SETFL, flags);
+    if (ret < 0) {
+        FATAL << "setNonBlocking failed -- sockfd = " << sockfd << " error : " << errno;
+    }
 
     flags = ::fcntl(sockfd, F_GETFD, 0);
     flags |= FD_CLOEXEC;
     ret = ::fcntl(sockfd, F_SETFD, flags);
-
-    (void)ret;
+    if (ret < 0) {
+        FATAL << "setCloexec failed -- sockfd = " << sockfd << " error : " << errno;
+    }
 }
 
 int sockets::createNonBlockSocketfd()
@@ -57,10 +61,11 @@ int sockets::Accept(int sockfd, struct sockaddr_in* addr)
 {
     socklen_t addrlen = sizeof *addr;
     int connfd = accept(sockfd, (SA*)addr, &addrlen);
-    sockets::setNonBlockingAndCloseOnExec(connfd);
     if (connfd < 0) {
-        LOG << "SYSERR-socket::Accept()";
+        LOG << "SYSERR-socket::Accept()" << " error = " << strerror_tl(errno);
+        return -1;
     }
+    sockets::setNonBlockingAndCloseOnExec(connfd);
     return connfd;
 }
 
