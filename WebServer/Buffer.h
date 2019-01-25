@@ -356,24 +356,24 @@ public:
 
     // Helpers
 public:
-    const char* FindCRLF() const {
+    const char* findCRLF() const {
         const char* crlf = std::search(data(), writeBegin(), kCRLF, kCRLF + 2);
         return crlf == writeBegin() ? nullptr : crlf;
     }
 
-    const char* FindCRLF(const char* start) const {
+    const char* findCRLF(const char* start) const {
         assert(data() <= start);
         assert(start <= WriteBegin());
         const char* crlf = std::search(start, writeBegin(), kCRLF, kCRLF + 2);
         return crlf == writeBegin() ? nullptr : crlf;
     }
 
-    const char* FindEOL() const {
+    const char* findEOL() const {
         const void* eol = memchr(data(), '\n', length());
         return static_cast<const char*>(eol);
     }
 
-    const char* FindEOL(const char* start) const {
+    const char* findEOL(const char* start) const {
         assert(data() <= start);
         assert(start <= WriteBegin());
         const void* eol = memchr(start, '\n', writeBegin() - start);

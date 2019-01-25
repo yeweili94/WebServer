@@ -27,12 +27,12 @@ ywl::AsyncLogging::AsyncLogging(const std::string logFileName, int flushInterval
     buffers_.reserve(16);
 }
 
-void ywl::AsyncLogging::append(const char* logline, int len)
+void ywl::AsyncLogging::append(const char* data, int len)
 {
     MutexLockGuard lock(mutex_);
     if (currentBuffer_->writeableBytes() > len)
     {
-        currentBuffer_->append(logline, len);
+        currentBuffer_->append(data, len);
     }
     else
     {
@@ -41,12 +41,13 @@ void ywl::AsyncLogging::append(const char* logline, int len)
         if (nextBuffer_)
         {
             currentBuffer_ = std::move(nextBuffer_);
+            nextBuffer_.reset();
         }
         else
         {
             currentBuffer_.reset(new Buffer);
         }
-        currentBuffer_->append(logline, len);
+        currentBuffer_->append(data, len);
         cond_.notify();
     }
 }

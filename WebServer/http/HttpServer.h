@@ -35,6 +35,7 @@ private:
                    Timestamp receiveTime);
 
     void onRequest(const TcpConnectionPtr&, const HttpRequest&);
+    void loadPage(const std::string& path, HttpResponse* resp);
 
     TcpServer tcpServer_;
 };

@@ -20,8 +20,7 @@ void defaultConnectionCallback(const TcpConnectionPtr& conn)
 
 void defaultMessageCallback(const TcpConnectionPtr&, Buffer* buf, Timestamp)
 {
-    std::string message = buf->nextAllString();
-    fprintf(stderr, "%s\n", message.c_str());
+    fprintf(stderr, "%s\n", std::string(buf->data(), buf->readableBytes()).c_str());
 }
 
 }
@@ -129,9 +128,7 @@ void TcpServer::removeConnectionInloop(const TcpConnectionPtr& conn)
     assert(conn.use_count() == 2);
     size_t n = connections_.erase(conn->name());
     assert(conn.use_count() == 1);
-
     assert(n == 1); (void)n;
-
     EventLoop* ioLoop = conn->getLoop();
     ioLoop->queueInLoop(
         boost::bind(&TcpConnection::connectDestroyed, conn));

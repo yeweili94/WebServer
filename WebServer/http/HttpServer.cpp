@@ -6,6 +6,7 @@
 
 #include <boost/bind.hpp>
 
+#include <sys/stat.h>
 #include <iostream>
 
 using namespace ywl;
@@ -15,6 +16,20 @@ namespace ywl
 {
 namespace net
 {
+
+static void read_file(FILE* fp, char** output, int* length)
+{
+    struct stat filestats;
+    int fd = fileno(fp);
+    fstat(fd, &filestats);
+    *length = filestats.st_size;
+    *output = (char*)malloc(*length+1);
+    int start = 0;
+    int bytes_read;
+    while ((bytes_read = fread(*output + start, 1, *length - start, fp))) {
+        start += bytes_read;
+    }
+}
 
 HttpServer::HttpServer(EventLoop* loop,
                        const InetAddress& listenAddr,
@@ -51,7 +66,7 @@ void HttpServer::onMessage(const TcpConnectionPtr& conn,
                               Buffer* buf,
                               Timestamp receiveTime)
 {
-    std::cout << std::string(buf->data(), buf->readableBytes()) << std::endl;
+    // std::cout << std::string(buf->data(), buf->readableBytes()) << std::endl;
     HttpParser* parser = boost::any_cast<HttpParser>(conn->getMutableContex());
     if (!parser->parseRequest(buf, receiveTime))
     {
@@ -78,11 +93,7 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
     }
     else if (req.getVersion() == HttpRequest::kHttp10) 
     {
-        if (connection == "keep-alive" || connection == "Keep-Alive")
-        {
-            close = false;
-        }
-        else
+        if (connection != "keep-alive" && connection != "Keep-Alive")
         {
             close = true;
         }
@@ -102,29 +113,72 @@ void HttpServer::onRequest(const TcpConnectionPtr& conn, const HttpRequest& req)
 
 void HttpServer::httpCallback(const HttpRequest& req, HttpResponse* resp)
 {
-    std::cout << "Headers " << req.methodString() << " " << req.path() << std::endl;
-    auto& headers = req.headers();
-    for (auto it = headers.begin(); it != headers.end(); it++) {
-        std::cout << it->first << ": " << it->second << std::endl;
-    }
+    // std::cout << "Headers " << req.methodString() << " " << req.path() << std::endl;
+    // auto& headers = req.headers();
+    // for (auto it = headers.begin(); it != headers.end(); it++) {
+        // std::cout << it->first << ": " << it->second << std::endl;
+    // }
     if (req.path() == "/") {
         resp->setStatusCode(HttpResponse::k200OK);
-        resp->setStatusMessage("OK");
         resp->setContentType("text/html");
-        resp->addHeader("Server", "WEBSERVER");
+        resp->setStatusMessage("OK");
+        resp->addHeader("server", "Chord");
         std::string now = Timestamp::now().toFormattedString();
-        // std::string body = "\
-        //                     <html>\
-        //                         <head>\
-        //                             <title>This is title</title>\
-        //                         </head>\
-        //                         <body>\
-        //                             <h1>Hello, world</h1>\
-        //                             Now is " + now +"\
-        //                         </body>\
-        //                     </html>";
-        std::string body = "<html><head><title>This is title</title></head><body><h1>Hello</h1>Now is" + now + "</body></html>";
-        resp->setBody(body);
+        resp->setBody("<html><head><title>This is title</title></head>"
+                "<body><h1>Hello</h1>Now is " + now + "</body></html>");
+    }
+    else if (req.path() == "/baidu") {
+        loadPage("page/baidu.html", resp);
+    }
+    else if (req.path() == "/taobao") {
+        loadPage("page/taobao.html", resp);
+    }
+    else if (req.path() == "/interview") {
+        loadPage("page/interview.html", resp);
+    }
+    else if (req.path() == "/bupt") {
+        loadPage("page/bupt.html", resp);
+    }
+    else if (req.path() == "/google") {
+        loadPage("page/google.html", resp);
+    }
+    else if (req.path() == "/byrbbs") {
+        loadPage("page/byrbbs.html", resp);
+    }
+    else if (req.path() == "/cpp.png") {
+        resp->setStatusCode(HttpResponse::k200OK);
+        resp->setStatusMessage("OK");
+        resp->setContentType("png");
+        resp->addHeader("Server", "Chord");
+
+        FILE* fp = fopen("page/542378.png", "r");
+        char* input;
+        int input_len;
+        if (fp) {
+            read_file(fp, &input, &input_len);
+        } else 
+        {
+            ::fclose(fp);
+            return;
+        }
+        resp->setBody(std::string(input, input_len));
+        ::fclose(fp);
+        free(input);
+    }
+    else if (req.path() == "/huge.jpg") {
+        resp->setStatusCode(HttpResponse::k200OK);
+        resp->setStatusMessage("OK");
+        resp->setContentType("jpg");
+        resp->addHeader("Server", "Chord");
+
+        FILE* fp = fopen("page/huge.jpg", "r");
+        char* input;
+        int input_len;
+        if (!fp) return;
+        read_file(fp, &input, &input_len);
+        resp->setBody(std::string(input, input_len));
+        ::fclose(fp);
+        free(input);
     }
     else
     {
@@ -133,6 +187,31 @@ void HttpServer::httpCallback(const HttpRequest& req, HttpResponse* resp)
         resp->setCloseConnection(true);
     }
 }
+
+void HttpServer::loadPage(const std::string& path, HttpResponse* resp)
+{
+    FILE* fp = ::fopen(path.c_str(), "r");
+    if (!fp) {
+        resp->setStatusCode(HttpResponse::k404NotFound);
+        resp->setStatusMessage("Not Found");
+        resp->setCloseConnection(true);
+    }
+    else
+    {
+        resp->setStatusCode(HttpResponse::k200OK);
+        resp->setStatusMessage("OK");
+        resp->setContentType("text/html");
+        resp->addHeader("Server", "Chord");
+
+        char* input;
+        int input_len;
+        read_file(fp, &input, &input_len);
+        resp->setBody(std::string(input, input_len));
+        ::fclose(fp);
+        free(input);
+    }
+}
+
 
 }
 }
@@ -145,7 +224,7 @@ int main()
 {
     EventLoop loop;
     HttpServer server(&loop, InetAddress(8900), "dummy");
-    server.setThreadNumber(8);
+    server.setThreadNumber(4);
     server.start();
     loop.loop();
 }

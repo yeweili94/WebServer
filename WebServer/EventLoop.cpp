@@ -23,7 +23,7 @@ const int KNew = -1;
 const int KAdded = 1;
 const int KDeleted = 2;
 
-const int kPollTimeMs = 20000;
+const int kPollTimeMs = 100000;
 
 int createEventfd()
 {
@@ -71,7 +71,7 @@ EventLoop::EventLoop()
     if (t_loopInThisThread)
     {
         FATAL << "Another EventLoop " << t_loopInThisThread
-                << " exists in this thread " << threadId_;
+              << " exists in this thread " << threadId_;
     }
     else
     {
@@ -152,7 +152,6 @@ void EventLoop::queueInLoop(const Functor& cb)
         MutexLockGuard lock(mutex_);
         pendingFunctors_.push_back(cb);
     }
-
     // 调用queueInLoop的线程不是IO线程需要唤醒
     // 或者调用queueInLoop的线程是IO线程，并且此时正在调用pending functor，需要唤醒
     // 只有IO线程的事件回调中调用queueInLoop才不需要唤醒
@@ -185,15 +184,14 @@ void EventLoop::removeChannel(Channel* channel)
 void EventLoop::abortNotInLoopThread()
 {
     LOG << "EventLoop::abortNotInLoopThread - EventLoop " << this
-              << " was created in threadId_ = " << threadId_
-              << ", current thread id = " <<  CurrentThread::tid();
+        << " was created in threadId_ = " << threadId_
+        << ", current thread id = " <<  CurrentThread::tid();
     abort();
 }
 
 void EventLoop::wakeup()
 {
     uint64_t one = 1;
-    //ssize_t n = sockets::write(wakeupFd_, &one, sizeof one);
     ssize_t n = ::write(wakeupFd_, &one, sizeof one);
     if (n != sizeof one)
     {
@@ -204,7 +202,6 @@ void EventLoop::wakeup()
 void EventLoop::handleRead()
 {
     uint64_t one = 1;
-    //ssize_t n = sockets::read(wakeupFd_, &one, sizeof one);
     ssize_t n = ::read(wakeupFd_, &one, sizeof one);
     if (n != sizeof one)
     {

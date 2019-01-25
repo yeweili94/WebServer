@@ -72,7 +72,8 @@ public:
 private:
     MutexLock& mutex_;
 };
-}//ywl
+}//namespace ywl
+
 #define MutexLockGuard(x) error "Missing guard object name"
 
 #endif

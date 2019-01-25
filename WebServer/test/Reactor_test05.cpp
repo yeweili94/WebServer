@@ -34,9 +34,9 @@ void onMessage(const TcpConnectionPtr& conn,
     // printf("buffer current data size is : %zu\n", buf->length());
     // printf("buffer readerableBytes is : %zu\n", buf->readableBytes());
     // size_t len = buf->length();
-    std::string str = buf->nextAllString();
+    // std::string str = buf->nextAllString();
     // printf("buffer writeableBytes is : %zu\n", buf->writeableBytes());
-    printf("send message:%s\n", str.c_str());
+    // printf("send message:%s\n", str.c_str());
     // conn->send(str);
     buf->reset();
     (void)conn;
@@ -55,7 +55,7 @@ int main()
     EventLoop loop;
 
     TcpServer server(&loop, listenAddr, "TestServer");
-    server.setThreadNum(8);
+    server.setThreadNum(4);
     server.setConnectionCallback(onConnection);
     server.setMessageCallback(onMessage);
     server.start();

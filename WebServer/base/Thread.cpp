@@ -19,9 +19,6 @@ namespace CurrentThread
     __thread int t_cachedTid = 0;
     __thread char t_tidString[32];
     __thread const char* t_threadName = "unknown";
-    const bool sameType = boost::is_same<int, pid_t>::value;
-    BOOST_STATIC_ASSERT(sameType);
-    
 }//namespace CurrentThread
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +47,6 @@ namespace detail
             pthread_atfork(NULL, NULL, &afterFork);
         }
     };
-
     //初始化主线程
     ThreadNameInitializer init;
 

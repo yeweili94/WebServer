@@ -47,10 +47,6 @@ public:
     {
         messageCallback_ = cb;
     }
-    void setWriteCompleteCallback(const WriteCompleteCallback& cb)
-    {
-        writeCompleteCallback_ = cb;
-    }
 private:
     void newConnection(int sockfd, const InetAddress& peerAddr);
     void removeConnection(const TcpConnectionPtr& conn);
@@ -67,7 +63,6 @@ private:
     ThreadInitCallback threadInitCallback_;
     ConnectionCallback connectionCallback_;
     MessageCallback messageCallback_;
-    WriteCompleteCallback writeCompleteCallback_;
 
     bool started_;
     int nextConnId_;

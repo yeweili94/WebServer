@@ -19,8 +19,8 @@ target_link_libraries(EventLoopThread_test libserver_net)
 add_executable(Acceptor_test Acceptor_test.cpp)
 target_link_libraries(Acceptor_test libserver_net)
 
-add_executable(client client.cpp)
-target_link_libraries(client libserver_net)
+# add_executable(client client.cpp)
+# target_link_libraries(client libserver_net)
 
 # if (GTEST_FOUND)
     # add_executable(circular_buffer_test CirCularBufferUnitTest.cpp)

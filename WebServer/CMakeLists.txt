@@ -10,7 +10,6 @@ set(net_SRCS
     Acceptor.cpp
     TcpConnection.cpp
     TcpServer.cpp
-    TcpClient.cpp
     )
 add_library(libserver_net ${net_SRCS})
 target_link_libraries(libserver_net libserver_base)
@@ -30,7 +29,6 @@ set(HEADERS
     Acceptor.h
     TcpConnection.h
     TcpServer.h
-    TcpClient.h
     )
 install(FILES ${HEADERS} DESTINATION include/WebServer/net)
 

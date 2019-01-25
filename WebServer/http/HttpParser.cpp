@@ -12,7 +12,7 @@ bool HttpParser::parseRequest(Buffer* buf, Timestamp receiveTime)
     {
         if (expectRequestLine())
         {
-            const char* crlf = buf->FindCRLF();
+            const char* crlf = buf->findCRLF();
             if (crlf)
             {
                 ok = processRequestLine(buf->data(), crlf); //ÇëÇóĞĞ
@@ -35,7 +35,7 @@ bool HttpParser::parseRequest(Buffer* buf, Timestamp receiveTime)
         }
         else if (expectHeaders())
         {
-            const char* crlf = buf->FindCRLF();
+            const char* crlf = buf->findCRLF();
             if (crlf)
             {
                 const char* colon = std::find(buf->data(), crlf, ':');

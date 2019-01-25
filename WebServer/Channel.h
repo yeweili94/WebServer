@@ -33,10 +33,12 @@ class Channel : boost::noncopyable
   void operator delete(void* p);
 
   void handleEvent(Timestamp receiveTime);
-  void setReadCallback(const ReadEventCallback& cb)
-  { readCallback_ = cb; }
-  void setWriteCallback(const EventCallback& cb)
-  { writeCallback_ = cb; }
+  void setReadCallback(const ReadEventCallback& cb) { 
+      readCallback_ = cb;
+  }
+  void setWriteCallback(const EventCallback& cb) {
+      writeCallback_ = cb;
+  }
   void setCloseCallback(const EventCallback& cb)
   { closeCallback_ = cb; }
   void setErrorCallback(const EventCallback& cb)
@@ -44,7 +46,7 @@ class Channel : boost::noncopyable
 
   int fd() const { return fd_; }
   int events() const { return events_; }
-  void set_revents(int revt) { revents_ = revt; } // used by pollers
+  void set_revents(int revt) { revents_ = revt; } 
   int revents() const { return revents_; }
   bool isNoneEvent() const { return events_ == kNoneEvent; }
 
@@ -55,7 +57,6 @@ class Channel : boost::noncopyable
   void disableAll() { events_ = kNoneEvent; update(); }
   bool isWriting() const { return events_ & kWriteEvent; }
 
-  // for Poller
   int status() { return status_; }
   void setStatus(int status) { status_ = status; }
 

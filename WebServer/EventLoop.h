@@ -58,6 +58,7 @@ public:
             abortNotInLoopThread();
         }
     }
+
     bool isInLoopThread() const { return threadId_ == CurrentThread::tid(); }
 
     bool eventHandling() const { return eventHandling_; }

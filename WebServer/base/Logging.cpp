@@ -41,7 +41,6 @@ const char* strerror_tl(int savedErrno)
 Logger::Impl::Impl(const char* filename, int line)
     : stream_(),
       line_(line),
-      // logPosFileName_(filename),
       time_(Timestamp::now())
 {
     size_t size = strlen(filename);
@@ -74,7 +73,6 @@ Logger::Logger(const char* fileName, int line, int level)
     : impl_(fileName, line),
       level_(level)
 {
-
 }
 
 Logger::~Logger()
@@ -89,4 +87,5 @@ Logger::~Logger()
     }
 }
 
-}
+}//namespace ywl
+

@@ -141,29 +141,31 @@ void TimerManager::cancelInLoop(TimerId timerId)
 {
     loop_->assertInLoopThread();
     assert(timers_.size() == activetimers_.size());
-    ActiveTimer timer(timerId.timer_, timerId.sequence_);
-    //查找定时器,并删除
-    ActiveTimerSet::iterator it = activeTimers_.find(timer);
-    //还未到期
+     ActiveTimer timer(timerId.timer_, timerId.sequence_);
+     ActiveTimerSet::iterator it = activeTimers_.find(timer);
+    // 还未到期
     if (it != activeTimers_.end()) {
+        activeTimers_.erase(it);
+
         size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
         assert(n == 1); (void)n;
         delete it->first;
-        activeTimers_.erase(it);
     } 
-    //已经到期并且正在调用回调函数,但是并不想让这个重复定时器下次再次执行啊
+    // 已经到期并且正在调用回调函数,但是并不想让这个重复定时器下次再次执行啊
     else if (callingExpiredTimers_) {
         cancelingTimers_.insert(timer);
     }
     assert(timers_.size() == activeTimers_.size());
 }
 
+//执行到期的定时器后，需要把重复执行的定时器继续加入小根堆中
 void TimerManager::reset(const std::vector<Entry>& expired, Timestamp now)
 {
     Timestamp nextExpired;
     for (std::vector<Entry>::const_iterator it = expired.begin();
          it != expired.end(); ++it) {
         ActiveTimer timer(it->second, it->second->sequence());
+        //canceling_
         if (it->second->repeat()
             && cancelingTimers_.find(timer) == cancelingTimers_.end())
         {
@@ -189,22 +191,19 @@ bool TimerManager::insert(Timer* timer)
 {
     loop_->assertInLoopThread();
     assert(timers_.size() == activeTimers_.size());
+
     bool earlistChanged = false;
     Timestamp when = timer->expiration();
+
     TimerList::iterator it = timers_.begin();
-    //时间改变
     if (it == timers_.end() || when < it->first)
     {
         earlistChanged = true;
     }
     //插入到timers_中
-    std::pair<TimerList::iterator, bool> result;
-    result = timers_.insert(Entry(when, timer));
-    assert(result.second); (void)result;
+    timers_.insert(Entry(when, timer));
     //插入到activeTimers_中
-    std::pair<ActiveTimerSet::iterator, bool> activeresult
-        = activeTimers_.insert(ActiveTimer(timer, timer->sequence()));
-    assert(activeresult.second); (void)activeresult;
+    activeTimers_.insert(ActiveTimer(timer, timer->sequence()));
 
     assert(timers_.size() == activeTimers_.size());
     return earlistChanged;
@@ -214,15 +213,18 @@ std::vector<TimerManager::Entry> TimerManager::getExpired(Timestamp now)
 {
     assert(timres_.size() == activeTimers_.size());
     std::vector<Entry> expired;
-    Entry sentry(now, reinterpret_cast<Timer*>(UINTPTR_MAX));
-    //返回第一个未到期的Timer的迭代器
-    TimerList::iterator end = timers_.lower_bound(sentry);
-    assert(end == timers_.end() || now < end->first);
-    for (auto it = timers_.begin(); it != end; ++it) {
-        expired.push_back(*it);
+    //返回到期的Timer的迭代器
+    for (auto it = timers_.begin(); it != timers_.end();) {
+        if (it->first <= now) 
+        {
+            expired.push_back(*it);
+            it = timers_.erase(it);
+        }
+        else
+        {
+            break;
+        }
     }
-    timers_.erase(timers_.begin(), end);
-
     for (std::vector<Entry>::const_iterator it = expired.begin();
          it != expired.end(); ++it)
     {

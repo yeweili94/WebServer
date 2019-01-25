@@ -46,10 +46,10 @@ public:
         return readableBytes();
     }
 
-    char* data()
-    {
-        return buffer_ + readerIndex_;
-    }
+    // char* data()
+    // {
+    //     return buffer_ + readerIndex_;
+    // }
 
     const char* data() const
     {
@@ -333,13 +333,13 @@ public: // peekIntxx
     const char* findCRLF() const {
         if (!has_data_) return nullptr;
         if (writerIndex_ > readerIndex_) {
-            const char* pos = std::search(data(), writeBegin(), KCRLF, KCRLF + 2);
+            const char* pos = std::search(data(), writeBegin(), kCRLF, kCRLF + 2);
             if (pos == writeBegin()) return nullptr;
             return pos;
         }
-        const char* p1 = std::search(data(), begin() + capacity_, KCRLF, KCRLF + 2);
+        const char* p1 = std::search(data(), begin() + capacity_, kCRLF, kCRLF + 2);
         if (p1 != begin() + capacity_) return p1;
-        const char* p2 = std::search(begin() + reserved_prepend_size_, writeBegin(), KCRLF, KCRLF + 2);
+        const char* p2 = std::search(begin() + reserved_prepend_size_, writeBegin(), kCRLF, kCRLF + 2);
         if (p2 != writeBegin()) return p2;
         if (buffer_[capacity_-1] == '\r' && buffer_[reserved_prepend_size_] == '\n') return begin() + capacity_ - 1;
         return nullptr;
@@ -480,7 +480,7 @@ private:
     size_t capacity_;
     size_t reserved_prepend_size_;
     bool has_data_;
-    static const char KCRLF[];
+    static const char kCRLF[];
 };
 
 

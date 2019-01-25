@@ -67,7 +67,8 @@ void str_cli(FILE* fp, int sockfd) {
                 break;
             }
             fprintf(stderr, "send %lu bytes\n", strlen(sendbuf));
-            write(sockfd, sendbuf, strlen(sendbuf)-1);
+            size_t n = write(sockfd, sendbuf, strlen(sendbuf)-1);
+            (void)n;
             memset(sendbuf, 0, sizeof(sendbuf));
         }
     }

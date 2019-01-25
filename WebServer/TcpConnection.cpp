@@ -26,7 +26,6 @@ TcpConnection::TcpConnection(EventLoop* loop,
       channel_(new Channel(loop, sockfd)),
       localAddr_(localAddr),
       peerAddr_(peerAddr),
-      highWaterMark_(64*1024*1024),
       inputBuffer_(16),
       outputBuffer_(16)
 {
@@ -98,9 +97,6 @@ void TcpConnection::handleWrite()
         if (outputBuffer_.readableBytes() == 0)
         {
             channel_->disableWriting(); //停止关注可写事件,避免出现busy loop
-            // if (writeCompleteCallback_) {
-            //     loop_->runInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-            // }
             if (state_ == Disconnecting) {//所有的数据都发送完毕，并且有人试图关闭连接，则可以关闭连接
                                           //这个是shutdownInLoop是因为在shutdown()函数中有可能关闭不成功
                 shutdownInLoop();         //需要在发送缓冲区发送完毕时再做一次判断
@@ -137,7 +133,6 @@ void TcpConnection::handleError()
     LOG << "TcpConnection::handleError [" << name_ 
         << "] -SO_ERROR = " << err << " " << strerror(err);
 }
-
 
 //当应用层想要关闭连接，不能直接调用handleclose
 //因为有可能outputBuffer中的数据还没有发送完
@@ -181,8 +176,6 @@ void TcpConnection::send(const Slice& message)
 
 void TcpConnection::send(const Buffer* buf)
 {
-    // Slice slice(buf->data(), buf->readableBytes());
-    // send(slice);
     send(buf->data(), buf->readableBytes());
 }
 
@@ -211,28 +204,15 @@ void TcpConnection::send(const void* data, size_t len)
             }
         } else {
             nleft = len - nwrote;
-            // if (nleft == 0 && writeCompleteCallback_)
-            // {
-            //     loop_->queueInLoop(boost::bind(writeCompleteCallback_, shared_from_this()));
-            //     return;
-            // }
         }
     }
 
     assert(nwrote <= len);
     if (!error && nleft > 0) {
-        size_t oldLen = outputBuffer_.readableBytes();
-        if (oldLen + nleft >= highWaterMark_
-            && oldLen < highWaterMark_
-            && highWaterMarkCallback_)
-        {
-            loop_->runInLoop(boost::bind(highWaterMarkCallback_, shared_from_this(), oldLen + nleft));
-        }
         outputBuffer_.append(static_cast<const char*>(data) + nwrote, nleft);
         channel_->enableWriting();
     }
 }
-
 
 void TcpConnection::setTcpNoDelay(bool on)
 {
