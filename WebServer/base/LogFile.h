@@ -36,11 +36,11 @@ public:
     LogFile(const std::string& basename, int flushEveryN = 1024);
     ~LogFile();
 
-    void append(const char* logline, int len);
+    void append(const char* data, int len);
     void flush();
 
 private:
-    void append_unlocked(const char* logline, int len);
+    void append_unlocked(const char* data, int len);
     void rollFile();
     std::string getLogFileName(const std::string& basename);
 

@@ -79,10 +79,10 @@ LogFile::~LogFile()
 
 }
 
-void LogFile::append(const char* logline, int len)
+void LogFile::append(const char* data, int len)
 {
     // MutexLockGuard lock(mutex_);
-    append_unlocked(logline, len);
+    append_unlocked(data, len);
 }
 
 //not thread safe
@@ -134,9 +134,6 @@ std::string LogFile::getLogFileName(const std::string& basename)
     filename += ".log";
     return filename;
 }
-
-
-
 
 
 

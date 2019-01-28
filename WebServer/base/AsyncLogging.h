@@ -26,7 +26,7 @@ public:
         }
     }
 
-    void append(const char* logline, int len);
+    void append(const char* data, int len);
 
     void start()
     {
