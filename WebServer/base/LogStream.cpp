@@ -68,7 +68,7 @@ void LogStream::formatInteger(T v)
     if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         size_t len = convert(buffer_.current(), v);
-        buffer_.add(len);
+        buffer_.retrieve(len);
     }
 }
 
@@ -130,7 +130,7 @@ LogStream& LogStream::operator<<(const void* p)
         buf[0] = '0';
         buf[1] = 'x';
         size_t len = convertHex(buf+2, v);
-        buffer_.add(len+2);
+        buffer_.retrieve(len+2);
     }
     return *this;
 }
@@ -140,7 +140,7 @@ LogStream& LogStream::operator<<(double v)
     if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         int len = snprintf(buffer_.current(), KMaxNumericSize, "%.12g", v);
-        buffer_.add(len);
+        buffer_.retrieve(len);
     }
     return *this;
 }
@@ -150,7 +150,7 @@ LogStream& LogStream::operator<<(long double v)
     if (buffer_.writeableBytes() >= KMaxNumericSize)
     {
         int len = snprintf(buffer_.current(), KMaxNumericSize, "%.12Lg", v);
-        buffer_.add(len);
+        buffer_.retrieve(len);
     }
     return *this;
 }

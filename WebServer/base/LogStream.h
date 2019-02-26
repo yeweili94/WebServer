@@ -9,7 +9,7 @@
 
 class AsyncLogging;
 const int KSmallBuffer = 4000;
-const int KLargeBuffer = 1000 * 4000;
+const int KLargeBuffer = 4000 * 1024;
 
 namespace ywl
 {
@@ -17,7 +17,12 @@ template<size_t SIZE>
 class FixedBuffer : boost::noncopyable
 {
 public:
-    FixedBuffer() : cur_(data_) 
+    enum STATUS { FULL, FREE };
+
+    FixedBuffer() 
+        : next_(NULL),
+          cur_(data_),
+          status_(FREE)
     {
     }
 
@@ -34,21 +39,28 @@ public:
         }
     }
 
+    STATUS status() { return status_; }
+    void setStatus(STATUS stat) { status_ = stat; }
+
     const char* data() const { return data_; }
     int length() const { return static_cast<int>(cur_ - data_); }
 
     char* current() { return cur_; }
     int writeableBytes() const { return static_cast<int>(end() - cur_); }
-    void add(size_t len) { cur_ += len; }
+    void retrieve(size_t len) { cur_ += len; }
 
     void reset() {cur_ = data_;}
     void bzero() {memset(data_, 0, sizeof data_); }
+
+    FixedBuffer<KLargeBuffer>* next_;
 
 private:
     const char* end() const { return data_ + sizeof(data_); }
 
     char data_[SIZE];
     char* cur_;
+
+    STATUS status_;
 };
 
 class LogStream : boost::noncopyable
