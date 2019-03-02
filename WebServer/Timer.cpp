@@ -67,14 +67,12 @@ void resetTimerfd(int timerfd, Timestamp expiration)
 }//namespace detail
 
 using namespace detail;
-AtomicInt64 Timer::s_numCreated_;
 
 TimerManager::TimerManager(EventLoop* loop)
     : loop_(loop),
       timerfd_(createTimerfd()),
       timerfdChannel_(loop, timerfd_),
       timers_(),
-      activeTimers_(),
       callingExpiredTimers_(false)
 {
     timerfdChannel_.setReadCallback(
@@ -100,7 +98,6 @@ void TimerManager::handleRead()
 
     std::vector<Entry> expired = getExpired(now);
     callingExpiredTimers_ = true;
-    cancelingTimers_.clear();
     for (auto it = expired.begin(); it != expired.end(); ++it)
     {
         //定时回调函数
@@ -110,14 +107,13 @@ void TimerManager::handleRead()
     reset(expired, now);
 }
 
-TimerId TimerManager::addTimer(const TimerCallback& cb,
+void TimerManager::addTimer(const TimerCallback& cb,
                             Timestamp when,
                             double interval)
 {
     Timer* timer = new Timer(cb, when, interval);
     loop_->runInLoop(
             boost::bind(&TimerManager::addTimerInLoop, this, timer));
-    return TimerId(timer, timer->sequence());
 }
 
 void TimerManager::addTimerInLoop(Timer* timer)
@@ -131,44 +127,14 @@ void TimerManager::addTimerInLoop(Timer* timer)
     }
 }
 
-void TimerManager::cancel(TimerId timerId)
-{
-    loop_->runInLoop(
-        boost::bind(&TimerManager::cancelInLoop, this, timerId));
-}
-
-void TimerManager::cancelInLoop(TimerId timerId)
-{
-    loop_->assertInLoopThread();
-    assert(timers_.size() == activetimers_.size());
-     ActiveTimer timer(timerId.timer_, timerId.sequence_);
-     ActiveTimerSet::iterator it = activeTimers_.find(timer);
-    // 还未到期
-    if (it != activeTimers_.end()) {
-        activeTimers_.erase(it);
-
-        size_t n = timers_.erase(Entry(it->first->expiration(), it->first));
-        assert(n == 1); (void)n;
-        delete it->first;
-    } 
-    // 已经到期并且正在调用回调函数,但是并不想让这个重复定时器下次再次执行啊
-    else if (callingExpiredTimers_) {
-        cancelingTimers_.insert(timer);
-    }
-    assert(timers_.size() == activeTimers_.size());
-}
-
 //执行到期的定时器后，需要把重复执行的定时器继续加入小根堆中
 void TimerManager::reset(const std::vector<Entry>& expired, Timestamp now)
 {
     Timestamp nextExpired;
     for (std::vector<Entry>::const_iterator it = expired.begin();
          it != expired.end(); ++it) {
-        ActiveTimer timer(it->second, it->second->sequence());
         //canceling_
-        if (it->second->repeat()
-            && cancelingTimers_.find(timer) == cancelingTimers_.end())
-        {
+        if (it->second->repeat()) {
             it->second->restart(now);
             insert(it->second);
         } else {
@@ -190,11 +156,8 @@ void TimerManager::reset(const std::vector<Entry>& expired, Timestamp now)
 bool TimerManager::insert(Timer* timer)
 {
     loop_->assertInLoopThread();
-    assert(timers_.size() == activeTimers_.size());
-
     bool earlistChanged = false;
     Timestamp when = timer->expiration();
-
     TimerList::iterator it = timers_.begin();
     if (it == timers_.end() || when < it->first)
     {
@@ -202,18 +165,12 @@ bool TimerManager::insert(Timer* timer)
     }
     //插入到timers_中
     timers_.insert(Entry(when, timer));
-    //插入到activeTimers_中
-    activeTimers_.insert(ActiveTimer(timer, timer->sequence()));
-
-    assert(timers_.size() == activeTimers_.size());
     return earlistChanged;
 }
 
 std::vector<TimerManager::Entry> TimerManager::getExpired(Timestamp now)
 {
-    assert(timres_.size() == activeTimers_.size());
     std::vector<Entry> expired;
-    //返回到期的Timer的迭代器
     for (auto it = timers_.begin(); it != timers_.end();) {
         if (it->first <= now) 
         {
@@ -224,13 +181,6 @@ std::vector<TimerManager::Entry> TimerManager::getExpired(Timestamp now)
         {
             break;
         }
-    }
-    for (std::vector<Entry>::const_iterator it = expired.begin();
-         it != expired.end(); ++it)
-    {
-        ActiveTimer timer(it->second, it->second->sequence());
-        size_t n = activeTimers_.erase(timer);
-        assert(n == 1); (void)n;
     }
     return expired;
 }
