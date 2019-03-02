@@ -50,8 +50,10 @@ public:
     void setTcpNoDelay(bool on);
 
     void setContex(const boost::any& contex){ contex_ = contex; }
+    void setTimerNode(const boost::any& contex) { timerNode_ = contex; }
     const boost::any& getContex() const { return contex_; }
     boost::any* getMutableContex() { return &contex_; }
+    const boost::any& getTimerNode() { return timerNode_; }
 
     void setConnectionCallback(const ConnectionCallback& cb) { 
         connectionCallback_ = cb;
@@ -97,7 +99,7 @@ private:
     Buffer outputBuffer_;
 
     boost::any contex_;
-    
+    boost::any timerNode_;
 };
 
 

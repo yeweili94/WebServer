@@ -41,10 +41,9 @@ public:
 
     // timers
     // Safe to call from other threads.
-    TimerId runAt(const Timestamp& time, const TimerCallback& cb);
-    TimerId runAfter(double delay, const TimerCallback& cb);
-    TimerId runEvery(double interval, const TimerCallback& cb);
-    void cancel(TimerId timerId);
+    void runAt(const Timestamp& time, const TimerCallback& cb);
+    void runAfter(double delay, const TimerCallback& cb);
+    void runEvery(double interval, const TimerCallback& cb);
 
     // internal usage
     void wakeup();

@@ -33,13 +33,17 @@ static void read_file(FILE* fp, char** output, int* length)
 
 HttpServer::HttpServer(EventLoop* loop,
                        const InetAddress& listenAddr,
-                       const std::string& name)
-    : tcpServer_(loop, listenAddr, name)
+                       const std::string& name,
+                       int idleSeconds)
+    : tcpServer_(loop, listenAddr, name),
+      connectionBuckets_(idleSeconds)
     {
         tcpServer_.setConnectionCallback(
             boost::bind(&HttpServer::onConnection, this, _1));
         tcpServer_.setMessageCallback(
             boost::bind(&HttpServer::onMessage, this, _1, _2, _3));
+        connectionBuckets_.resize(idleSeconds);
+        loop->runEvery(1.0, boost::bind(&HttpServer::onTimer, this));
     }
 
 HttpServer::~HttpServer()
@@ -54,11 +58,20 @@ void HttpServer::start()
     tcpServer_.start();
 }
 
+void HttpServer::onTimer()
+{
+    connectionBuckets_.push_back(Bucket());
+}
+
 void HttpServer::onConnection(const TcpConnectionPtr& conn)
 {
     if (conn->connected())
     {
         conn->setContex(HttpParser());
+        EntryPtr entry(new Entry(conn));
+        connectionBuckets_.back().insert(entry);
+        boost::weak_ptr<Entry> weakEntry(entry);
+        conn->setTimerNode(weakEntry);
     }
 }
 
@@ -66,7 +79,14 @@ void HttpServer::onMessage(const TcpConnectionPtr& conn,
                               Buffer* buf,
                               Timestamp receiveTime)
 {
-    // std::cout << std::string(buf->data(), buf->readableBytes()) << std::endl;
+    //handle timer wheel
+    if (conn->connected()) {
+        EntryPtr entry = boost::any_cast<boost::weak_ptr<Entry>>(conn->getTimerNode()).lock();
+        if (entry) {
+            connectionBuckets_.back().insert(entry);
+        }
+    }
+    std::cout << std::string(buf->data(), buf->readableBytes()) << std::endl;
     HttpParser* parser = boost::any_cast<HttpParser>(conn->getMutableContex());
     if (!parser->parseRequest(buf, receiveTime))
     {
@@ -212,7 +232,6 @@ void HttpServer::loadPage(const std::string& path, HttpResponse* resp)
     }
 }
 
-
 }
 }
 
@@ -223,7 +242,7 @@ using namespace ywl::net;
 int main()
 {
     EventLoop loop;
-    HttpServer server(&loop, InetAddress(8900), "dummy");
+    HttpServer server(&loop, InetAddress(8900), "dummy", 8);
     server.setThreadNumber(4);
     server.start();
     loop.loop();

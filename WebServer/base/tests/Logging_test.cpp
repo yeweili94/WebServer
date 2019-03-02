@@ -1,5 +1,6 @@
 #include <WebServer/base/Logging.h>
 #include <WebServer/base/Thread.h>
+#include <WebServer/base/Timestamp.h>
 
 #include <boost/shared_ptr.hpp>
 
@@ -14,7 +15,7 @@ using namespace ywl;
 
 void threadFunc()
 {
-    for (int i = 0; i < 100000; ++i)
+    for (int i = 0; i < 10000000; ++i)
     {
         LOG << i;
     }
@@ -48,7 +49,7 @@ void stressing_single_thread()
     }
 }
 
-void stressing_multi_threads(int threadNum = 10)
+void stressing_multi_threads(int threadNum = 4)
 {
     // threadNum * 100000 lines
     cout << "----------stressing test multi thread-----------" << endl;
@@ -62,6 +63,10 @@ void stressing_multi_threads(int threadNum = 10)
     {
         vsp[i]->start();
     }
+    for (int i = 0; i < threadNum; i++)
+    {
+        vsp[i]->join();
+    }
 }
 
 void other()
@@ -74,12 +79,13 @@ void other()
 int main()
 {
     // 共500014行
-    type_test();
-    stressing_single_thread();
-    sleep(3);
-    other();
-    sleep(3);
+    Timestamp now(Timestamp::now());
+    std::cout << now.toFormattedString() << std::endl;
+    // type_test();
+    // stressing_single_thread();
+    // other();
     stressing_multi_threads();
-    sleep(3);
+    Timestamp now1(Timestamp::now());
+    std::cout << now1.toFormattedString() << std::endl;
     return 0;
 }
