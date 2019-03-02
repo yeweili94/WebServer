@@ -53,7 +53,7 @@ void ywl::AsyncLogging::append(const char* data, int len)
         else
         {
             //当前缓冲区中不足以写入一条日志
-            fprintf(stderr, "current_buf foraword\n");
+            // fprintf(stderr, "current_buf foraword\n");
             current_buf_->setStatus(Buffer::FULL);
             Buffer* next_buf = current_buf_->next_;
             wakeup = true;
@@ -65,7 +65,7 @@ void ywl::AsyncLogging::append(const char* data, int len)
                 newBuffer->next_ = next_buf;
                 current_buf_->next_ = newBuffer;
                 current_buf_ = newBuffer;
-                fprintf(stderr, "add a new buf");
+                // fprintf(stderr, "add a new buf");
             }
             else
             {
@@ -99,7 +99,7 @@ void ywl::AsyncLogging::threadFunc()
                 assert(current_buf_ == persist_buf_);
                 current_buf_->setStatus(Buffer::FULL);
                 current_buf_ = current_buf_->next_;
-                fprintf(stderr, "move current_buf to persist this buff\n");
+                // fprintf(stderr, "move current_buf to persist this buff\n");
             }
         }
         //单线程持久化日志不需要加锁，因为此时的状态还是FULL
@@ -110,7 +110,7 @@ void ywl::AsyncLogging::threadFunc()
             persist_buf_->reset();
             persist_buf_->setStatus(Buffer::FREE);
             persist_buf_ = persist_buf_->next_;
-            fprintf(stderr, "persist_buf move foraworld\n");
+            // fprintf(stderr, "persist_buf move foraworld\n");
         }
     }
     output.flush();
