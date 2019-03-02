@@ -19,7 +19,7 @@
 * 任务队列可以采用无锁队列,避免加锁开销
 * 日志分等级处理
 
-使用方式：
+## Usage
 编译之前确认已经安装boost(必须), 和googletest(选择)
 sudo apt-get install libboost-dev
 
