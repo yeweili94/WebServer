@@ -30,7 +30,7 @@ bool HttpParser::parseRequest(Buffer* buf, Timestamp receiveTime)
             }
             else
             {
-                notFinished = true;
+                notFinished = false;
             }
         }
         else if (expectHeaders())
