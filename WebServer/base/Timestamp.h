@@ -37,6 +37,7 @@ public:
     bool valid() const { return microSecondsSinceEpoch_ > 0; }
 
     int64_t microSecondsSinceEpoch() const { return microSecondsSinceEpoch_; }
+    int msecSecondsSinceEpoch()  const { return microSecondsSinceEpoch_ / 1000; }
     time_t secondSinceEpoch() const
     {
         return static_cast<time_t>(microSecondsSinceEpoch_ / KMicroSecondsPerSecond);

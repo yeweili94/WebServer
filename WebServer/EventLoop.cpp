@@ -104,7 +104,8 @@ void EventLoop::loop()
     while (!quit_)
     {
         activeChannels_.clear();
-        pollReturnTime_ = poll(kPollTimeMs);
+        int64_t nextExpiredTime = timerQueue_->nextExpired();
+        pollReturnTime_ = poll(nextExpiredTime);
         eventHandling_ = true;
         for (auto it = activeChannels_.begin();
             it != activeChannels_.end(); ++it)
@@ -115,6 +116,7 @@ void EventLoop::loop()
         currentActiveChannel_ = NULL;
         eventHandling_ = false;
         doPendingFunctors();
+        timerQueue_->handleExpired();
     }
 
     LOG << "EventLoop " << this << " stop looping";

@@ -2,6 +2,7 @@
 #define WEB_SERVER_NET_TIMER_H
 
 #include <WebServer/base/Mutex.h> 
+#include <WebServer/base/Atomic.h>
 #include <WebServer/base/Timestamp.h>
 #include <WebServer/Channel.h>
 
@@ -9,6 +10,7 @@
 #include <boost/function.hpp>
 
 #include <set>
+#include <queue>
 #include <sys/select.h>
 
 namespace ywl
@@ -25,15 +27,23 @@ public:
           expiration_(when),
           interval_(interval),
           repeat_(interval > 0)
-    {}
-
-    void run() const
     {
-        callback_();
+        Timer::timerId_.increment();
+    }
+    
+    void run() {
+        if (callback_) callback_();
+    }
+
+    ~Timer() {
+        run();
     }
 
     Timestamp expiration() const { return expiration_; }
+    int64_t TimerId() { return Timer::timerId_.get(); }
+    int msecSecondsSinceEpoch() { return expiration_.msecSecondsSinceEpoch(); }
     bool repeat() const { return repeat_; }
+    bool isValid() const { return expiration_.valid(); }
     void restart(Timestamp now)
     {
         if (repeat_) {
@@ -47,6 +57,17 @@ private:
     Timestamp expiration_;
     const double interval_;
     const bool repeat_;
+    static AtomicInt64 timerId_;
+};
+
+struct TimerCmp
+{
+    bool operator() (const std::shared_ptr<Timer>& lt, const std::shared_ptr<Timer>& rt)
+    {
+        if (lt->msecSecondsSinceEpoch() > rt->msecSecondsSinceEpoch()) return true;
+        if (lt->msecSecondsSinceEpoch() == rt->msecSecondsSinceEpoch() && lt->TimerId() > rt->TimerId()) return true;
+        return false;
+    }
 };
 
 class EventLoop;
@@ -56,23 +77,14 @@ public:
     TimerManager(EventLoop* loop);
     ~TimerManager();
     void addTimer(const TimerCallback& cb, Timestamp when, double interval);
+    void handleExpired();
+    bool earliestChanged(const std::shared_ptr<Timer>& timerPtr);
+    int nextExpired();
 
 private:
-    typedef std::pair<Timestamp, Timer*> Entry;
-    typedef std::set<Entry> TimerList;
-
-    void addTimerInLoop(Timer* timer);
-    void handleRead();  //事件到达时的回调函数
-
-    std::vector<Entry> getExpired(Timestamp now);
-    void reset(const std::vector<Entry>& expired, Timestamp now);
-    bool insert(Timer* timer);
-
-    EventLoop* loop_;   //所属的EventLoop
-    const int timerfd_; //唤醒时写入的文件描述符
-    Channel timerfdChannel_;    
-    TimerList timers_;  //按照timestamp排序
-    bool callingExpiredTimers_; 
+    EventLoop* loop_;
+    typedef std::shared_ptr<Timer> TimerPtr;
+    std::priority_queue<TimerPtr, std::vector<TimerPtr>, TimerCmp> timerQueue_;
 };
 
 }

@@ -77,7 +77,7 @@ private:
     int epollfd_;
     std::vector<struct epoll_event> epollEvents_;
 
-    boost::scoped_ptr<TimerManager> timerQueue_;
+    std::unique_ptr<TimerManager> timerQueue_;
     int wakeupFd_;				// 用于eventfd
     boost::scoped_ptr<Channel> wakeupChannel_;	// 该通道将会纳入poller_来管理
 
