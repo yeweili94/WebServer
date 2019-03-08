@@ -56,7 +56,10 @@ int TimerManager::nextExpired()
         return -1;
     }
     Timestamp now(Timestamp::now());
-    return timerQueue_.top()->msecSecondsSinceEpoch() - now.msecSecondsSinceEpoch();
+    int diff = timerQueue_.top()->msecSecondsSinceEpoch() - now.msecSecondsSinceEpoch();
+    //return 0 表示时间偏移或者定时器设置太短，已经有定时器超时了
+    //所以epoll直接返回处理超时事件
+    return diff > 0 ? diff : 0;
 }
 
 bool TimerManager::earliestChanged(const std::shared_ptr<Timer>& timerPtr)
