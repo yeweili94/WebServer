@@ -11,7 +11,7 @@ namespace ywl
 {
 namespace net
 {
-AtomicInt64 Timer::timerId_;
+std::atomic<uint64_t> Timer::timerId_;
 
 TimerManager::TimerManager(EventLoop* loop)
     : loop_(loop)

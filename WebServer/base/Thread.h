@@ -1,8 +1,6 @@
 #ifndef WEB_SERVER_THREAD_H
 #define WEB_SERVER_THREAD_H
 
-#include <WebServer/base/Atomic.h>
-
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 
@@ -11,7 +9,6 @@
 
 namespace ywl
 {
-using namespace ywl::detail;
 class Thread : public boost::noncopyable
 {
 public:

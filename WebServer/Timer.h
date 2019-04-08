@@ -2,7 +2,6 @@
 #define WEB_SERVER_NET_TIMER_H
 
 #include <WebServer/base/Mutex.h> 
-#include <WebServer/base/Atomic.h>
 #include <WebServer/base/Timestamp.h>
 #include <WebServer/Channel.h>
 
@@ -11,6 +10,7 @@
 
 #include <set>
 #include <queue>
+#include <atomic>
 #include <sys/select.h>
 
 namespace ywl
@@ -28,7 +28,7 @@ public:
           interval_(interval),
           repeat_(interval > 0)
     {
-        Timer::timerId_.increment();
+        Timer::timerId_.fetch_add(0);
     }
     
     void run() {
@@ -40,7 +40,7 @@ public:
     }
 
     Timestamp expiration() const { return expiration_; }
-    int64_t TimerId() { return Timer::timerId_.get(); }
+    int64_t TimerId() { return Timer::timerId_.fetch_add(0); }
     int msecSecondsSinceEpoch() { return expiration_.msecSecondsSinceEpoch(); }
     bool repeat() const { return repeat_; }
     bool isValid() const { return expiration_.valid(); }
@@ -57,7 +57,7 @@ private:
     Timestamp expiration_;
     const double interval_;
     const bool repeat_;
-    static AtomicInt64 timerId_;
+    static std::atomic<uint64_t> timerId_;
 };
 
 struct TimerCmp
